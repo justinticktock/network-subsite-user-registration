@@ -432,52 +432,38 @@ class NSUR {
 	 */
 	public function action_admin_rating_prompt_notices( ) {
 
-		$help_note_post_types =  get_option('nsur_post_types');
-		$help_note_post_types = array_filter( (array) $help_note_post_types );  // Filter out any empty entries, if non active.	
-
-		$number_of_help_notes_acitve 	= ( empty( $help_note_post_types ) ? 0 : count($help_note_post_types) );
-
-		$user_responses =  array_filter( (array)get_user_meta( get_current_user_id(), NSUR_PROMPT_ARGUMENT, true ));	
-		if ( in_array(  "done_now", $user_responses ) ) 
+		$user_responses =  array_filter( (array)get_user_meta( get_current_user_id(), NSUR_PROMPT_ARGUMENT, true ));
+		if ( in_array(  "done_now", $user_responses ) )
 			return;
 
-		if ( current_user_can( 'install_plugins' ) && ( get_option('nsur_general_enabled') ) ) {
-			
+		if ( current_user_can( 'install_plugins' ) ) {
+
 			$next_prompt_time = get_user_meta( get_current_user_id(), 'nsur_prompt_timeout', true );
 			if ( ( time() > $next_prompt_time )) {
 				$plugin_user_start_date = get_user_meta( get_current_user_id(), 'nsur_start_date', true );
 				?>
 				<div class="update-nag">
-					
-					<p><?php esc_html(printf( __("You've been using <b>Role Based Help Notes</b> for more than %s.  How about giving it a review by logging in at wordpress.org ?", 'nsur-text-domain'), human_time_diff( $plugin_user_start_date) )); ?>
-					
-					<?php if ( get_option('nsur_general_enabled') ) { ?>
-						<li><?php esc_html(printf( __("The site is using General Help Notes type.", 'nsur-text-domain'))); ?>
-					<?php } ?>
-					
-					<?php if ( $number_of_help_notes_acitve ) { ?>
-						<LI><?php esc_html(printf( _n("You are using Help Notes with 1 user role.",  "You are using Help Notes with %d user roles.", $number_of_help_notes_acitve, 'nsur-text-domain'), $number_of_help_notes_acitve ) ); ?>
-						<?php  for ($x=0; $x<$number_of_help_notes_acitve; $x++) echo '  :-) '; ?>
-					<?php } ?>						
+
+					<p><?php esc_html(printf( __("You've been using <b>Network Subsite User Registration</b> for more than %s.  How about giving it a review by logging in at wordpress.org ?", 'network-subsite-user-registration'), human_time_diff( $plugin_user_start_date) )); ?>
+
 					</p>
 					<p>
 
-						<?php echo '<a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'doing_now' )))  . '">' .  esc_html__( "Yes, please take me there.", 'song-book-extra-text-domain' ) . '</a> '; ?>
-						
-						| <?php echo ' <a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'not_now' )))  . '">' .  esc_html__( "Not right now thanks.", 'song-book-extra-text-domain' ) . '</a> ';?>
-						
+						<?php echo '<a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'doing_now' )))  . '">' .  esc_html__( 'Yes, please take me there.', 'network-subsite-user-registration' ) . '</a> '; ?>
+
+						| <?php echo ' <a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'not_now' )))  . '">' .  esc_html__( 'Not right now thanks.', 'network-subsite-user-registration' ) . '</a> ';?>
+
 						<?php
-						if ( in_array(  "not_now", $user_responses ) || in_array(  "doing_now", $user_responses )) { 
-							echo '| <a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'done_now' )))  . '">' .  esc_html__( "I've already done this !", 'song-book-extra-text-domain' ) . '</a> ';
+						if ( in_array(  "not_now", $user_responses ) || in_array(  "doing_now", $user_responses )) {
+							echo '| <a href="' .  esc_url(add_query_arg( array( NSUR_PROMPT_ARGUMENT => 'done_now' )))  . '">' .  esc_html__( "I've already done this !", 'network-subsite-user-registration' ) . '</a> ';
 						}?>
 
 					</p>
 				</div>
 				<?php
 			}
-		}	
+		}
 	}
-
 
         
 	/**
@@ -549,7 +535,7 @@ class NSUR {
 			if ( in_array( "doing_now", (array_values((array)$user_user_hide_message ))))  {
 				$next_prompt_time = time() + ( 60*60*24*  NSUR_PROMPT_DELAY_IN_DAYS ) ;
 				update_user_meta( get_current_user_id(), 'nsur_prompt_timeout' , $next_prompt_time );
-				wp_redirect( 'http://wordpress.org/support/view/plugin-reviews/song-book' );
+				wp_redirect( 'http://wordpress.org/support/view/plugin-reviews/network-subsite-user-registration' );
 				exit;					
 			}
 
