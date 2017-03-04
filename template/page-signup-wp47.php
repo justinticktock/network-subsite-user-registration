@@ -3,6 +3,9 @@
 Template Name: Signup Page
 */
 
+/**
+ * This is a cut down version of the WordPress 4.7.2 wp-signup.php template
+ */
 
 
 /** Sets up the WordPress Environment. */

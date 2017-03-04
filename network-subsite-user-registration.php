@@ -444,7 +444,7 @@ class NSUR {
 				?>
 				<div class="update-nag">
 
-					<p><?php esc_html(printf( __("You've been using <b>Network Subsite User Registration</b> for more than %s.  How about giving it a review by logging in at wordpress.org ?", 'network-subsite-user-registration'), human_time_diff( $plugin_user_start_date) )); ?>
+					<p><?php esc_html(printf( __("You've been using <b>Network Subsite User Registration</b> for more than %s.  How about giving it a review by logging in at wordpress.org ?", 'network-subsite-user-registration'), human_time_diff( $plugin_user_start_date ) ) ); ?>
 
 					</p>
 					<p>
