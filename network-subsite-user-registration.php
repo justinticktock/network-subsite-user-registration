@@ -49,8 +49,16 @@ class NSUR {
 	 * @access public
 	 * @return void
 	 */
-	private function __construct() {
+	private function __construct() {            
             
+            $this->plugin_full_path = plugin_dir_path(__FILE__) . 'network-subsite-user-registration.php' ;
+
+            // Set the constants needed by the plugin.
+            add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
+
+            /* Load the functions files. */
+            add_action( 'plugins_loaded', array( $this, 'includes' ), 2 );
+
             // drop out with warning if not a Network
             if ( ! is_multisite() ) {
                     add_action( 'admin_notices', array( $this, 'admin_not_a_network_notice' ));
@@ -66,17 +74,10 @@ class NSUR {
                     return;
             }	
 
-
-            $this->plugin_full_path = plugin_dir_path(__FILE__) . 'network-subsite-user-registration.php' ;
-
-            // Set the constants needed by the plugin.
-            add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
-
-            /* Load the functions files. */
-            add_action( 'plugins_loaded', array( $this, 'includes' ), 2 );
-
-            /* Hooks... */
-
+            // Load admin error messages
+            add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
+            
+            
             // register admin side - Loads the textdomain, upgrade routine and menu item.
             add_action( 'admin_init', array( $this, 'admin_init' ));
          //   add_action( 'admin_menu', array( $this, 'admin_menu' ) );
@@ -96,10 +97,6 @@ class NSUR {
 
             // Load admin error messages
             add_action( 'admin_notices', array( $this, 'action_admin_notices' ) );
-
-
-            /* redirect_signup_home */
-            //add_filter( 'before_signup_header', array( $this, 'nsur_redirect_signup_redirect' ) );
             
             // allow the plugin to use templates held by the parent theme, child theme rather than the plugin
             add_filter( 'template_include', array( $this, 'template_include' ) );            
@@ -162,8 +159,34 @@ class NSUR {
 	 */
 	public function remove_users_can_register() {
 
-            if ( ! is_main_site() && get_option( 'nsur_join_site_enabled', false ) == false ) {
-                add_filter('pre_site_option_registration', '__return_empty_string', 10 );
+            $network_registration = in_array( get_site_option( 'registration' ), array('none', 'user', 'blog', 'all' ) ) ? get_site_option( 'registration') : 'none' ;
+
+            /*
+             *  the network main site 'registration' option can be any of the following,
+             * 
+             * 'none' - neither user or new blogs can be registerd
+             * 'all' - both user and new blogs can be registerd, 
+             * 'blog' - Logged in users may register new sites, 
+             * 'user' - new accounts may be registered
+             */  
+            
+            $local_join_site_enabled = get_option( 'nsur_join_site_enabled', false );
+     
+            if ( ! is_main_site() && ! $local_join_site_enabled ) {
+                // allow new blog registration option through, block user registrations.
+                switch ( $network_registration ) {
+                        case 'none':
+                        case 'user':
+                                $new_network_registration = 'none';
+                                break;                    
+                        case 'all':                            
+                        case 'blog':
+                                // we are allowing uesrs to register sites if the network settings are configured for it.
+                                $new_network_registration = 'blog';
+                                break;       
+                }                                          
+                add_filter( 'pre_site_option_registration', $new_network_registration, 10 );
+                
             }
 	}
 
@@ -248,6 +271,8 @@ class NSUR {
             }
 
             load_plugin_textdomain('nsur-text-domain', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+           
+
 	}
 
 	/**
@@ -508,7 +533,44 @@ class NSUR {
 
 	}        
 	
- 
+	/**
+	 * Message for Network to allow user registration requirement
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function admin_user_registration_not_enabled( ) {
+            
+                // Prompt for multisite error
+                ?>
+                <div class="notice notice-error">
+                                <p>
+                                <?php esc_html_e( __("You currently have not setup your Network to allow user registration, please allow this before continuing.", 'network-subsite-user-registration' ) ); ?>
+                                </p>
+                        </p>
+                </div>
+                <?php 
+
+
+	}        
+        
+	/**
+	 * Message for Network to allow user registration requirement
+	 *
+	 * @access public
+	 * @return null
+	 */
+	public function call_admin_user_registration_not_enabled( ) {                         
+            
+            $network_user_registration_configured = in_array( get_site_option( 'registration' ), array( 'user', 'all' ) );
+
+            $screen = get_current_screen();               
+
+            if ( ! $network_user_registration_configured && ( $screen->id = 'users_page_registration-settings' ) ) {
+                    add_action( 'admin_notices', array( $this, 'admin_user_registration_not_enabled' ));
+            }  
+                   
+	}                
             
 	/**
 	 * Store the user selection from the rate the plugin prompt.
