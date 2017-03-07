@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: justinticktock
+Contributors: justinticktock, keycapability
 Tags: signup, register, user, mu, multisite, network, login
 Requires at least: 4.7
 Tested up to: 4.7.3
@@ -36,6 +36,9 @@ Once installed to allow the public to register with a site within the Network..
 1. Set Network wide user registration within the Dashboard goto [Network Admin] > Settings > under 'Registration Settings' configure to allow User accounts to be registered.
 2. Within the Dashboard/Admin of each site that you wish to enable user registration to to [Site Amdin] > [Users] > Registration and enable the setting.
 3. The Public will now be able to register and login with only the sites that you set within the step (2) above.
+
+ 	
+[GitHub page](https://github.com/justinticktock/network-subsite-user-registration).
 
 
 == Frequently Asked Questions ==
