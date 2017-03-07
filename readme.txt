@@ -2,7 +2,7 @@
 Contributors: justinticktock
 Tags: signup, register, user, mu, multisite, network, login
 Requires at least: 4.7
-Tested up to: 4.7.2
+Tested up to: 4.7.3
 Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -43,7 +43,8 @@ Once installed to allow the public to register with a site within the Network..
 
 == Screenshots ==
 
-1. The Settings Screen.
+1. The Settings Screen for user registration.
+2. An example of Network Settings allowing both sites and users to be registered, 
 
 == Changelog ==
 

@@ -7,10 +7,10 @@ Version: 1.0
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
+Domain Path: /languages/
 License: GPLv2 or later
 Network: true
 */
-
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
@@ -39,10 +39,6 @@ class NSUR {
     // Settings Page Title
     public  $page_title = 'User Registration';
     
-    // Arguments
-    public  $args = array();
-    
-
 	/**
 	 * __construct function.
 	 *
@@ -50,68 +46,59 @@ class NSUR {
 	 * @return void
 	 */
 	private function __construct() {            
-            
-            $this->plugin_full_path = plugin_dir_path(__FILE__) . 'network-subsite-user-registration.php' ;
 
-            // Set the constants needed by the plugin.
-            add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
+                $this->plugin_full_path = plugin_dir_path(__FILE__) . 'network-subsite-user-registration.php' ;
 
-            /* Load the functions files. */
-            add_action( 'plugins_loaded', array( $this, 'includes' ), 2 );
+                // Load the textdomain.
+                add_action( 'plugins_loaded', array( $this, 'i18n' ), 1 );
 
-            // drop out with warning if not a Network
-            if ( ! is_multisite() ) {
-                    add_action( 'admin_notices', array( $this, 'admin_not_a_network_notice' ));
-                    return;
-            }	
+                // Set the constants needed by the plugin.
+                add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
 
-            // drop out with warning if not a Network
-            $wp_version = (float)get_bloginfo( 'version' );
-            // drop out with warning if the WP version is not supported (eg. we have no tested page template yet)
-            if ( $wp_version <  4.7 ) {
-                    add_action( 'admin_notices', array( $this, 'admin_not_supported_wp_version' ));
-                    return;
-            }	
+                /* Load the functions files. */
+                add_action( 'plugins_loaded', array( $this, 'includes' ), 2 );
 
-            // Load admin error messages
-            add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
-            //add_action( 'wp_loaded', array( $this, 'call_admin_user_registration_not_enabled' ) );
-            //add_action( 'admin_init', array( $this, 'call_admin_user_registration_not_enabled' ) );
+                // admin prompt and drop out with warning if not a Network
+                if ( ! is_multisite() ) {
+                        add_action( 'admin_notices', array( $this, 'admin_not_a_network_notice' ));
+                        return;
+                }	
 
-           // die(get_site_option( 'registration', "nonthing" ));        
-                    
-            // register admin side - Loads the textdomain, upgrade routine and menu item.
-            add_action( 'admin_init', array( $this, 'admin_init' ));
-         //   add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+                // admin prompt and drop out with warning if not at the supported WordPress versions
+                $wp_version = (float)get_bloginfo( 'version' );
+                // drop out with warning if the WP version is not supported (eg. we have no tested page template yet)
+                if ( $wp_version <  4.7 ) {
+                        add_action( 'admin_notices', array( $this, 'admin_not_supported_wp_version' ));
+                        return;
+                }	
 
-            // register the selected-active custom post types
-            add_action( 'init', array( $this, 'init' ));
- 
-            // remove the ability for users to register if not selected in this plugins settings.
-            //add_action( 'current_screen', array( $this, 'remove_users_can_register' ) );            
-            add_action( 'plugins_loaded', array( $this, 'remove_users_can_register' ) );            
+                // Load admin error message for Newtwork not allowing user registration
+                add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
 
+                // register admin side - Loads the textdomain, upgrade routine and menu item.
+                add_action( 'admin_init', array( $this, 'admin_init' ));
+             //   add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+
+                // register the selected-active custom post types
+                add_action( 'init', array( $this, 'init' ));
+
+                // remove the ability for users to register if not selected in this plugins settings.
+                //add_action( 'current_screen', array( $this, 'remove_users_can_register' ) );            
+                add_action( 'plugins_loaded', array( $this, 'remove_users_can_register' ) );            
 
 
-            // allow filtering of custom taxonomies on the admin side.
-            $this->args['taxonomy'] = array('album', 'publisher', 'songwriter', 'copyright', 'ccli-song', 'license', 'scripture');
-            add_action( 'restrict_manage_posts', array( $this, 'restrict_song_by_taxonomy' ) );
-            //add_filter( 'parse_query', array( $this, 'convert_song_id_to_term_in_query' ) );
+                // Load admin error messages
+                add_action( 'admin_notices', array( $this, 'action_admin_notices' ) );
 
+                // allow the plugin to use templates held by the parent theme, child theme rather than the plugin
+                add_filter( 'template_include', array( $this, 'template_include' ) );            
 
-            // Load admin error messages
-            add_action( 'admin_notices', array( $this, 'action_admin_notices' ) );
-            
-            // allow the plugin to use templates held by the parent theme, child theme rather than the plugin
-            add_filter( 'template_include', array( $this, 'template_include' ) );            
-            
-            /* register new */
-            add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ) );
-            
-            
-            /* check and add users if already on the network */
-            add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_add_exting_user' ) );
-            
+                // redirect to the sign-up page
+                add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ) );
+
+                // check and add users if already on the network 
+                add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_add_exting_user' ) );
+
                
 	}
 	
@@ -142,8 +129,6 @@ class NSUR {
 
 		// settings 
 		require_once( NSUR_MYPLUGINNAME_PATH . 'includes/settings.php' );  
-
-		require_once( NSUR_MYPLUGINNAME_PATH . 'includes/class-page-templater.php' );    
 
 	}
 
@@ -176,13 +161,8 @@ class NSUR {
 	 */
 	public function pre_site_option_registration( $option ) {
 
-            // drop out if the main site for the Network
-            if ( is_main_site( ) ) {
-                return $option;
-            }
-            
-            // we will not be here if on the main_site.
-          
+
+            // remove the filter so that it executes only once
             remove_filter( 'pre_site_option_registration', array( $this, 'pre_site_option_registration' ), 10 );
             $network_registration = in_array( get_site_option( 'registration' ), array( 'none', 'user', 'blog', 'all' ) ) ? get_site_option( 'registration' ) : 'none' ;
 
@@ -211,14 +191,8 @@ class NSUR {
                                 $network_registration = 'blog';
                                 break;       
                 }                                          
-                //add_filter( 'pre_site_option_registration', $new_network_registration, 10 );
-                //add_filter( 'pre_site_option_registration', function( $new_network_registration ) { return $new_network_registration ; } ); 
-                
             }
             
-            
-             
-            // die($network_registration);
             return $network_registration;
 	}   
 
@@ -272,11 +246,10 @@ class NSUR {
 
             return $result;  
 
-
         }
         
 	/**
-	 * Initialise the plugin by handling upgrades and loading the text domain. 
+	 * Initialise the plugin by handling upgrades
 	 *
 	 * @return void
 	 */
@@ -302,10 +275,17 @@ class NSUR {
                 update_option('nsur_plugin_version', $plugin_new_version ); 
             }
 
-            load_plugin_textdomain('nsur-text-domain', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-           
-
 	}
+
+	/**
+	 * Loads the text domain.
+	 *
+	 * @return void
+	 */
+	public function i18n( ) {
+		$ok = load_plugin_textdomain( 'network-subsite-user-registration', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/');                
+	}
+        
 
 	/**
 	 * Provides an upgrade path for older versions of the plugin
@@ -321,8 +301,6 @@ class NSUR {
 		}
 	}
 	
-
-        
          /**
 	 * Redirect To New Signup Page
 	 *
@@ -334,7 +312,7 @@ class NSUR {
                 exit();
         }
         
-        
+
          /**
 	 * redirect to the sign-up page
 	 *
@@ -359,7 +337,7 @@ class NSUR {
         
         
 	/**
-	 * Add capabilities and Flush your rewrite rules for plugin activation.
+	 * Add code for plugin activation.
 	 *
 	 * @access public
 	 * @return $settings
@@ -412,26 +390,6 @@ class NSUR {
 		
 
 	/**
-	 * This function is hooked into plugin deactivation for 
-	 * enforced active extension plugins.
-	 *
-	 * @access public
-	 * @return null
-	 */
-	public static function on_deactivation() {
-    
-        if ( ! current_user_can( 'activate_plugins' ) )
-            return;
-        $plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
-        check_admin_referer( "deactivate-plugin_{$plugin}" );
-
-		$plugin_slug = explode( "/", $plugin );	
-		$plugin_slug = $plugin_slug[0];	
-		update_option( "nsur_deactivate_{$plugin_slug}", true );
-		
-        }
-
-	/**
 	 * Display the admin warnings.
 	 *
 	 * @access public
@@ -445,28 +403,7 @@ class NSUR {
                     $this->action_admin_rating_prompt_notices();
                 }
 	}
-
-	/**
-	 * Display the admin error message for plugin forced active.
-	 *
-	 * @access public
-	 * @return null
-	 */
-	public function action_admin_plugin_forced_active_notices( $plugin ) {
-
-		$plugin_message = get_option("nsur_deactivate_{$plugin}");
-		if ( ! empty( $plugin_message ) ) {
-			?>
-			<div class="error">
-				  <p><?php esc_html_e(sprintf( __( 'Error the %1$s plugin is forced active with ', 'nsur-text-domain'), $plugin)); ?>
-				  <a href="options-general.php?page=<?php echo $this->menu ; ?>&tab=nsur_plugin_extension"> <?php echo esc_html(__( 'Songbook Settings!', 'nsur-text-domain')); ?> </a></p>
-			</div>
-			<?php
-			update_option("nsur_deactivate_{$plugin}", false); 
-		}
-	}
-
-		
+	
 	/**
 	 * Store the current users start date with Help Notes.
 	 *
@@ -479,7 +416,6 @@ class NSUR {
 			add_user_meta( get_current_user_id(), 'nsur_start_date', time(), true );
 			add_user_meta( get_current_user_id(), 'nsur_prompt_timeout', time() + 60*60*24*  NSUR_PROMPT_DELAY_IN_DAYS, true );
 	}
-
 	
 	/**
 	 * Display the admin message for plugin rating prompt.
@@ -539,8 +475,6 @@ class NSUR {
                         </p>
                 </div>
                 <?php 
-
-
 	}
         
 
@@ -561,8 +495,6 @@ class NSUR {
                         </p>
                 </div>
                 <?php 
-
-
 	}        
 	
 	/**
@@ -573,17 +505,17 @@ class NSUR {
 	 */
 	public function admin_user_registration_not_enabled( ) {
             
+                $network_settings_link = '<a href="' . network_admin_url('/settings.php') . '">' . __( 'Network settings', 'network-subsite-user-registration' ) . "</a>";
+
                 // Prompt for multisite error
                 ?>
-                <div class="notice notice-error">
+                <div class="update-nag">
                                 <p>
-                                <?php esc_html_e( __("You currently have not setup your Network to allow user registration, please allow this before continuing.", 'network-subsite-user-registration' ) ); ?>
+                                <?php echo sprintf(  __('You currently have not setup your %1$s to allow user registration, please allow this before continuing.', 'network-subsite-user-registration' ), $network_settings_link ); ?>
                                 </p>
                         </p>
                 </div>
                 <?php 
-
-
 	}        
         
 	/**
@@ -598,9 +530,10 @@ class NSUR {
             $main_site_id = $this->get_network_main_site_id();
 
             // collect the Network registration setting
- 
             switch_to_blog( $main_site_id );  
-            
+
+            // remove the hook so that we don't limit the user regeistration and get the true network setting for the 'registration' option
+            remove_filter( 'pre_site_option_registration', array( $this, 'pre_site_option_registration' ), 10 );            
             $network_user_registration_configured = in_array( get_site_option( 'registration' ), array( 'user', 'all' ) );
             restore_current_blog();
 
@@ -624,6 +557,16 @@ class NSUR {
                 return $current_site->blog_id;
         }
 
+        /*
+         * Get the ID of the network
+         *
+         * @return int The blog_id of the main site
+         */
+        public function get_network_id() {
+                global $current_site;
+                
+                return $current_site->id;
+        }
 
 	/**
 	 * Store the user selection from the rate the plugin prompt.
@@ -717,7 +660,6 @@ class NSUR {
             }
              else {
 
-
                 /* 
                  * If neither the child nor parent theme have overridden the explicit template 
                  * we are allowing the pluing to use it's own template file.  However if the 
@@ -738,7 +680,6 @@ class NSUR {
             }
         }
           
-
         /**
          * Creates or returns an instance of this class.
          *
@@ -765,19 +706,21 @@ class NSUR {
 NSUR::get_instance();
 
 
-
+// code to run
 if ( is_multisite( ) ) {
 
     
     $blogs = wp_list_pluck( get_sites(), 'blog_id' );
 
     if ( $blogs ) {
-                
+        
+        // add user to the site
         function nsur_activate_user( $user_id, $password, $meta )  {
             global $blog_id;
             add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
         }
-                        
+        
+        // hook into the multisite user activation and add user if nsur settings are configured to allow this.
         foreach( $blogs as $blog ) {	
             if ( get_blog_option( $blog, 'nsur_join_site_enabled', false ) ) {
 				add_action( 'wpmu_activate_user', 'nsur_activate_user', 10, 3 );

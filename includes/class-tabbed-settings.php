@@ -275,13 +275,27 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		/**
 		 * field_checkbox_option 
 		 *
-		 * @param array of arguments to pass the option name to render the form field.
+		 * @param
+                 *  'name'      =   option name
+                 *  'std'       =   default value to initialise the option to.                                                                           
+                 *  'value'     =   value to overwrite/force the setting to.
+                 *  'label'     =   left of the setting
+                 *  'desc'      =   for text under the setting.
+                 *  'type'      =   'field_checkbox_option'
+                 *  'cb_label'  =   right of the setting
+                 *  'disabled'  =   if true setting is disabled
+                 * 
 		 * @return void
 		 */
 		public function field_checkbox_option( array $args  ) {
                     
-			$option   = $args['option'];
-                        
+                        $defaults = array(
+                                        'value' => null,
+                                        'disabled' => false,
+                                      );
+
+                        $option = wp_parse_args( $args['option'], $defaults );
+
                         // Take value if not null
                         if( is_null( $value = $option['value'] ) ) {
                             $value = get_option( $option['name'] );

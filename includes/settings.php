@@ -75,35 +75,13 @@ class NSUR_Settings {
                 //$url = die( network_admin_url('/settings.php'));
                 $network_settings_link = '<a href="' . network_admin_url('/settings.php') . '">' . __( 'Network settings', 'network-subsite-user-registration' ) . "</a>";
 
-                // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                
+
                 $main_site_id = $network_subsite_user_registration->get_network_main_site_id();
 
-                // collect the Network registration setting
-                $network_user_registration_configured = null;
-                if ( is_main_site() ) {
-                        /* collect the main site configutaion for allowed user registration so that our settings here
-                         * follows and mirrors this in the disabled setting.  To change what users see on the settings 
-                         * page for the main_site they will need to change the settings of the Main Site.
-                         */
+                $cb_label = _x( 'Enable', 'enable the setting option.', 'network-subsite-user-registration' ); 
+                $desc = __( "Enabling this option allows the public to register with this local site. The 'subscriber' role will be granted.", 'network-subsite-user-registration' );
 
-                        $network_user_registration_configured = in_array( get_site_option( 'registration' ), array( 'user', 'all' ) ) ? True : false ;
 
-                        //echo sprintf( __( 'Roles for %1$s :', 'role-includer' ), $user_profile_link );
-                        $cb_label = __( '( this setting cannot be changed on this page for the main site )', 'network-subsite-user-registration' );
-                        $desc = sprintf( __( '</Br></Br>( To change this setting goto the %1$s ).', 'network-subsite-user-registration' ), $network_settings_link );
-                } else { 
-                        /* otherwise allow the plugin settings page to define user registration.
-                         */                    
-                        $cb_label = _x( 'Enable', 'enable the setting option.', 'network-subsite-user-registration' ); 
-                        $desc = sprintf( __( "Enabling this option allows the public to register with this local site. The 'subscriber' role will be granted "
-                                . '</Br></Br>'
-                                . '( note %1$s should have user registration allowed ).', 'network-subsite-user-registration' ), $network_settings_link );
-                }
-
-                
-                // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                
 		$settings = 	apply_filters( 'nsur_settings', 
 									array(								
 										'nsur_general' => array(
@@ -112,16 +90,14 @@ class NSUR_Settings {
 											'description' 	=> __( 'Settings to allow the public to register with this site.', 'network-subsite-user-registration' ),
 											'settings' 		=> array(		
                                                                                                             array(
-                                                                                                                    'name' 		=> 'nsur_join_site_enabled',
-                                                                                                                    'std' 		=> false,
-                                                                                                                
-                                                                                                                    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                                                                                                    'value'             => $network_user_registration_configured,
+                                                                                                                    'name'          => 'nsur_join_site_enabled',
+                                                                                                                    'std'           => false,                                                                                                                
+                                                                                                                //  'value'         => $network_user_registration_configured,
                                                                                                                     'label'         => __( 'Allow Users to Register', 'network-subsite-user-registration' ),
                                                                                                                     'desc'          => $desc,
                                                                                                                     'type'          => 'field_checkbox_option',                                                                                                                
                                                                                                                     'cb_label'      => $cb_label, 
-                                                                                                                    'disabled'      => $main_site_disable_options,
+                                                                                                                //   'disabled'      => $main_site_disable_options,
                                                                                                                     ),
                                                                                                         ),
 										),
