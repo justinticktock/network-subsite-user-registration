@@ -67,7 +67,6 @@ class NSUR {
 
             // drop out with warning if not a Network
             $wp_version = (float)get_bloginfo( 'version' );
-            
             // drop out with warning if the WP version is not supported (eg. we have no tested page template yet)
             if ( $wp_version <  4.7 ) {
                     add_action( 'admin_notices', array( $this, 'admin_not_supported_wp_version' ));
@@ -76,8 +75,11 @@ class NSUR {
 
             // Load admin error messages
             add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
-            
-            
+            //add_action( 'wp_loaded', array( $this, 'call_admin_user_registration_not_enabled' ) );
+            //add_action( 'admin_init', array( $this, 'call_admin_user_registration_not_enabled' ) );
+
+           // die(get_site_option( 'registration', "nonthing" ));        
+                    
             // register admin side - Loads the textdomain, upgrade routine and menu item.
             add_action( 'admin_init', array( $this, 'admin_init' ));
          //   add_action( 'admin_menu', array( $this, 'admin_menu' ) );
@@ -86,7 +88,9 @@ class NSUR {
             add_action( 'init', array( $this, 'init' ));
  
             // remove the ability for users to register if not selected in this plugins settings.
-            add_action( 'plugins_loaded', array( $this, 'remove_users_can_register' ));            
+            //add_action( 'current_screen', array( $this, 'remove_users_can_register' ) );            
+            add_action( 'plugins_loaded', array( $this, 'remove_users_can_register' ) );            
+
 
 
             // allow filtering of custom taxonomies on the admin side.
@@ -153,13 +157,34 @@ class NSUR {
 	}	
         
 	/**
-	 * remote the users can register if not selected in settings. 
+	 * remote the users can register if defined in settings 
+         * and not on the main site.  If on the main site the network
+         * settings will continue to define the function.
 	 *
 	 * @return void
 	 */
-	public function remove_users_can_register() {
+	public function remove_users_can_register( ) {
 
-            $network_registration = in_array( get_site_option( 'registration' ), array('none', 'user', 'blog', 'all' ) ) ? get_site_option( 'registration') : 'none' ;
+            add_filter( 'pre_site_option_registration', array( $this, 'pre_site_option_registration' ), 10, 1 ); 
+
+        }        
+
+	/**
+	 * remote the users can register if not selected in settings. 
+	 *
+	 * @return $network_registration setting updated with account of this plugins settings.
+	 */
+	public function pre_site_option_registration( $option ) {
+
+            // drop out if the main site for the Network
+            if ( is_main_site( ) ) {
+                return $option;
+            }
+            
+            // we will not be here if on the main_site.
+          
+            remove_filter( 'pre_site_option_registration', array( $this, 'pre_site_option_registration' ), 10 );
+            $network_registration = in_array( get_site_option( 'registration' ), array( 'none', 'user', 'blog', 'all' ) ) ? get_site_option( 'registration' ) : 'none' ;
 
             /*
              *  the network main site 'registration' option can be any of the following,
@@ -171,24 +196,31 @@ class NSUR {
              */  
             
             $local_join_site_enabled = get_option( 'nsur_join_site_enabled', false );
-     
-            if ( ! is_main_site() && ! $local_join_site_enabled ) {
+
+            if ( ! $local_join_site_enabled ) {
+
                 // allow new blog registration option through, block user registrations.
                 switch ( $network_registration ) {
                         case 'none':
                         case 'user':
-                                $new_network_registration = 'none';
+                                $network_registration = 'none';
                                 break;                    
                         case 'all':                            
                         case 'blog':
                                 // we are allowing uesrs to register sites if the network settings are configured for it.
-                                $new_network_registration = 'blog';
+                                $network_registration = 'blog';
                                 break;       
                 }                                          
-                add_filter( 'pre_site_option_registration', $new_network_registration, 10 );
+                //add_filter( 'pre_site_option_registration', $new_network_registration, 10 );
+                //add_filter( 'pre_site_option_registration', function( $new_network_registration ) { return $new_network_registration ; } ); 
                 
             }
-	}
+            
+            
+             
+            // die($network_registration);
+            return $network_registration;
+	}   
 
 
 	/**
@@ -561,17 +593,38 @@ class NSUR {
 	 * @return null
 	 */
 	public function call_admin_user_registration_not_enabled( ) {                         
+
+            
+            $main_site_id = $this->get_network_main_site_id();
+
+            // collect the Network registration setting
+ 
+            switch_to_blog( $main_site_id );  
             
             $network_user_registration_configured = in_array( get_site_option( 'registration' ), array( 'user', 'all' ) );
+            restore_current_blog();
 
             $screen = get_current_screen();               
 
-            if ( ! $network_user_registration_configured && ( $screen->id = 'users_page_registration-settings' ) ) {
+            if ( ! $network_user_registration_configured && ( $screen->id == 'users_page_registration-settings' ) ) {               
                     add_action( 'admin_notices', array( $this, 'admin_user_registration_not_enabled' ));
             }  
                    
 	}                
             
+        
+        /*
+         * Get the ID of the main site in a multisite network
+         *
+         * @return int The blog_id of the main site
+         */
+        public function get_network_main_site_id() {
+                global $current_site;
+                
+                return $current_site->blog_id;
+        }
+
+
 	/**
 	 * Store the user selection from the rate the plugin prompt.
 	 *

@@ -3,7 +3,7 @@
  * Plugin tabbed settings option class for WordPress themes.
  *
  * @package   class-tabbed-settings.php
- * @version   1.2.0
+ * @version   1.2.1
  * @author    Justin Fletcher <justin@justinandco.com>
  * @copyright Copyright ( c ) 2014, Justin Fletcher
  * @license   http://opensource.org/licenses/gpl-2.0.php GPL v2 or later
@@ -279,9 +279,14 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		 * @return void
 		 */
 		public function field_checkbox_option( array $args  ) {
+                    
 			$option   = $args['option'];
-			$value = get_option( $option['name'] );
-			?><label><input id="setting-<?php echo esc_html( $option['name'] ); ?>" name="<?php echo esc_html( $option['name'] ); ?>" type="checkbox" value="1" <?php checked( '1', $value ); ?> /> <?php echo $option['label']; ?></label><?php
+                        
+                        // Take value if not null
+                        if( is_null( $value = $option['value'] ) ) {
+                            $value = get_option( $option['name'] );
+                        }
+                        ?><label><input id="setting-<?php echo esc_html( $option['name'] ); ?>" name="<?php echo esc_html( $option['name'] ); ?>" type="checkbox" <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> value="1" <?php checked( '1', $value ); ?> /> <?php echo $option['cb_label']; ?></label><?php
 			if ( ! empty( $option['desc'] ) ) {
                             echo ' <p class="description">' .  $option['desc'] . '</p>';
                         }
