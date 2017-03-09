@@ -11,7 +11,7 @@
  * The text domain must be manually replaced with the required plugin text domain.
  */
 
- 
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }

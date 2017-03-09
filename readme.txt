@@ -1,25 +1,24 @@
 === Plugin Name ===
 Contributors: justinticktock, keycapability
-Tags: signup, register, user, mu, multisite, network, login
+Tags: signup, register, user, mu, multisite, network, multi-network, login
 Requires at least: 4.7
 Tested up to: 4.7.3
-Stable tag: 1.0
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Allow the public to register user accounts on individual sites within a Network (MultiSite) installation.
+Allow the public to register user accounts on Subsites within a Network (MultiSite) installation.
 
 == Description ==
 
-This is a plugin to allow the public to register on individual sites within a Network (MultiSite) installation.
+WordPress Network (Multisite) installations by default only allow user registration for the whole Network, e.g. users can register for the main site and not the other sites on the network.  This plugin allows you to allow the public to register on individual sites within a Network (MultiSite) and not require them to register on the main Network site before any of the other sub-sites.
 
 == Installation ==
 
-1. remove/delete the plugin folder you created manually (e.g. ../wp-content/plugins/network-subsite-user-registration/
-2. Go to site dashboard ‘My Sites’ > ‘Network Admin’ > ‘Plugins’
-3. Click on the ‘Add New’ button
-4. search for ‘User upgrade capability’ and install
-5. Network Activate the plugin
+1. Go to site dashboard ‘My Sites’ > ‘Network Admin’ > ‘Plugins’
+2. Click on the ‘Add New’ button
+3. search for ‘User upgrade capability’ and install
+4. Network Activate the plugin
 
 To Manually install follow these steps..
 
@@ -47,7 +46,8 @@ Once installed to allow the public to register with a site within the Network..
 == Screenshots ==
 
 1. The Settings Screen for user registration.
-2. An example of Network Settings allowing both sites and users to be registered, 
+2. An example of Network Settings allowing users to be registered
+3. An example of Network Settings allowing both sites and users to be registered.
 
 == Changelog ==
 

@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.0
+Version: 1.1
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -25,20 +25,9 @@ class NSUR {
     private static $instance = null;
 	
     public  $plugin_full_path;
-    public  $plugin_file = 'network-subsite-user-registration/network-subsite-user-registration.php';
-	
-    // Settings page slug	
-    public  $menu = 'registration-settings';
-	
-    // Settings Admin Menu Title
-    public  $menu_title = 'Registration';
-
-    // menu item
-    public  $menu_page = 'registration.php';
     
-    // Settings Page Title
-    public  $page_title = 'User Registration';
-    
+    public  $plugin_file;
+	    
 	/**
 	 * __construct function.
 	 *
@@ -47,8 +36,10 @@ class NSUR {
 	 */
 	private function __construct() {            
 
-                $this->plugin_full_path = plugin_dir_path(__FILE__) . 'network-subsite-user-registration.php' ;
-
+                $this->plugin_full_path = __FILE__ ;
+                
+                $this->plugin_file = trailingslashit( basename( dirname( __FILE__ ) )) . basename( __FILE__ ) ;
+                
                 // Load the textdomain.
                 add_action( 'plugins_loaded', array( $this, 'i18n' ), 1 );
 
@@ -75,9 +66,8 @@ class NSUR {
                 // Load admin error message for Newtwork not allowing user registration
                 add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
 
-                // register admin side - Loads the textdomain, upgrade routine and menu item.
+                // register admin side - Loads the textdomain, upgrade routine.
                 add_action( 'admin_init', array( $this, 'admin_init' ));
-             //   add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 
                 // register the selected-active custom post types
                 add_action( 'init', array( $this, 'init' ));
@@ -131,15 +121,6 @@ class NSUR {
 		require_once( NSUR_MYPLUGINNAME_PATH . 'includes/settings.php' );  
 
 	}
-
-	/**
-	 * menu_page:
-	 *
-	 * @return void
-	 */
-	public function menu_page() {
-		
-	}	
         
 	/**
 	 * remote the users can register if defined in settings 
@@ -255,25 +236,28 @@ class NSUR {
 	 */
 	public function admin_init() {
             
-            $plugin_current_version = get_option( 'nsur_plugin_version' );
-            $plugin_new_version =  $this->plugin_get_version();
+		//Registers user installation date/time on first use
+		$this->action_init_store_user_meta();
+
+                $plugin_current_version = get_option( 'nsur_plugin_version' );
+                $plugin_new_version =  $this->plugin_get_version();
 
 
-            // Admin notice hide prompt notice catch
-            $this->catch_hide_notice();
+                // Admin notice hide prompt notice catch
+                $this->catch_hide_notice();
 
-            if ( empty($plugin_current_version) || $plugin_current_version < $plugin_new_version ) {
+                if ( empty($plugin_current_version) || $plugin_current_version < $plugin_new_version ) {
 
-                $plugin_current_version = isset( $plugin_current_version ) ? $plugin_current_version : 0;
+                    $plugin_current_version = isset( $plugin_current_version ) ? $plugin_current_version : 0;
 
-                $this->upgrade( $plugin_current_version );
+                    $this->upgrade( $plugin_current_version );
 
-                // set default options if not already set..
-                $this->plugin_do_on_activation();
+                    // set default options if not already set..
+                    $this->plugin_do_on_activation();
 
-                // Update the option again after upgrade() changes and set the current plugin revision	
-                update_option('nsur_plugin_version', $plugin_new_version ); 
-            }
+                    // Update the option again after upgrade() changes and set the current plugin revision	
+                    update_option('nsur_plugin_version', $plugin_new_version ); 
+                }
 
 	}
 
@@ -364,9 +348,9 @@ class NSUR {
             
 		$plugin_data = get_plugin_data( $this->plugin_full_path );	
                 
-		$plugin_version = $plugin_data['Version'];
+		$plugin_version = $plugin_data[ 'Version' ];
                 
-		return filter_var($plugin_version, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+		return filter_var( $plugin_version, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
 	}
 	
 	/**
@@ -412,9 +396,9 @@ class NSUR {
 	 */
 	public function action_init_store_user_meta() {
 		
-			// start meta for a user
-			add_user_meta( get_current_user_id(), 'nsur_start_date', time(), true );
-			add_user_meta( get_current_user_id(), 'nsur_prompt_timeout', time() + 60*60*24*  NSUR_PROMPT_DELAY_IN_DAYS, true );
+                // start meta for a user
+                add_user_meta( get_current_user_id(), 'nsur_start_date', time(), true );
+                add_user_meta( get_current_user_id(), 'nsur_prompt_timeout', time() + 60*60*24*  NSUR_PROMPT_DELAY_IN_DAYS, true );
 	}
 	
 	/**
