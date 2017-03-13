@@ -42,6 +42,11 @@ Once installed to allow the public to register with a site within the Network..
 
 == Frequently Asked Questions ==
 
+Q1) In sub site user registration, I have found that users get redirected the registration page of main site to regester, will this happen with this plugin?
+
+A1) This plugin will give the user the experience of remaining on the subsite that they are registering on.  The acitvation of the new user does continue to be on the Network but this happens behind the scenes all they will see is they belong to the subsite.  If you register on the site at <a href="https://justinandco.com/plugins/">justinandco.com/plugins/</a> you'll see it in action you will be given access as subscriber to  the plugins subsite only and not to the Nework Main site "justinandco.com.
+
+
 
 == Screenshots ==
 
