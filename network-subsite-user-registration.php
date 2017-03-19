@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.2
+Version: 1.3
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -36,6 +36,8 @@ class NSUR {
 	 */
 	private function __construct() {            
 
+
+
                 $this->plugin_full_path = __FILE__ ;
                 
                 $this->plugin_file = trailingslashit( basename( dirname( __FILE__ ) )) . basename( __FILE__ ) ;
@@ -56,9 +58,8 @@ class NSUR {
                 }	
 
                 // admin prompt and drop out with warning if not at the supported WordPress versions
-                $wp_version = (float)get_bloginfo( 'version' );
                 // drop out with warning if the WP version is not supported (eg. we have no tested page template yet)
-                if ( $wp_version <  4.7 ) {
+                if ( version_compare( get_bloginfo( 'version' ), '4.7', '<') ) {
                         add_action( 'admin_notices', array( $this, 'admin_not_supported_wp_version' ));
                         return;
                 }	
@@ -210,8 +211,9 @@ class NSUR {
                             // A real quick way to do a case-insensitive sort of an array keyed by strings: 
                             uksort($user_blogs_sorted , "strnatcasecmp");
 
-                            $html = "<h1>Hi " . $submitted_user_email . " you have been added to this site, your current sites on the Network are: </h1></Br>";
-                            $html .= "<ul>";
+                            $html = "<h1>";
+                            $html .= sprintf(  __('Hi %1$s you have been added to this site, your current sites on the Network are:', 'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" );
+                            $html .= "</h1></Br><ul>";
                             foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
                                 if ( ! is_main_site( $user_blog->userblog_id ) ) {
                                             $html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
@@ -219,7 +221,7 @@ class NSUR {
                             }
                             $html .= "</ul>";    
 
-                            wp_die($html);
+                            die( $html );
 
                        }
                  }
@@ -593,33 +595,39 @@ class NSUR {
 	}
 
         
-
-        
+	/**
+	 * Return the signup template this can be overidden by the Theme
+	 *
+	 * @access public
+	 * @return $template, either a custom template for signup or the template given.
+	 */
         public function template_include( $template ) {
-
-            $wp_version = (float)get_bloginfo( 'version' );
-            
-            if ( $wp_version >=  4.7 ) {
-                $custom_page_signup_template = 'page-signup-wp47.php' ;
-            } else {
-                // else drop out to a default template that themes/child-themes can add themselves
-                $custom_page_signup_template = 'page-signup.php' ;
-            }
-            
-            if( ( basename( $_SERVER['REQUEST_URI'] ) == 'local-signup' )  && 
-                    ( $template_found = $this->find_custom_template( $custom_page_signup_template ) ) )  {
-               
-                        return $template_found;
+      
+            if( ( basename( $_SERVER['REQUEST_URI'] ) == 'local-signup' )  )  {   
+     
+                    /* Allow themes to override the signup template with the file 'page-signup.php'
+                     * in either the parent or child theme.
+                     */                
+                    if ( $template_found = $this->find_custom_template( 'page-signup.php' ) ) {
+                            return $template_found;
+                    }
+                        
+                    /* Otherwise the plugin template is provided for the sign-up page 
+                     * and this is based on the version of WordPress so we can allow for variations.
+                     */
+                    if ( version_compare( get_bloginfo( 'version' ), '4.7', '>=') ) {
+                        $custom_page_signup_template = 'page-signup-wp47.php' ;
+                    } else {
+                        // else dropout with a message that we are not supporting the version of WordPress
+                        wp_die( __( "The 'Network-Subsite-User-Registration' does not support your version of WordPress, therefore you will need to create a new template 'page-signup.php' "
+                                . "and add this to your theme/child-theme to act as a sign-up page .", 'network-subsite-user-registration' ) );                
+                    }    
+                    
+                    // overwrite the Wordpress standard login page template 'wp-signup.php'
+                    return $plugin_template_file = NSUR_MYPLUGINNAME_PATH . "template/$custom_page_signup_template";
             }   
-
-            if ( $GLOBALS['pagenow'] === 'wp-login.php' && 
-                    ! empty( $_REQUEST['action'] ) && 
-                    $_REQUEST['action'] === 'register' && 
-                    ( $template_found = $this->find_custom_template( $custom_page_signup_template ) ) )  {
-                        return $template_found;
-            }                      
             
-            // else return the original template
+            // else return the original template provided
             return $template;
 
         }
@@ -659,7 +667,6 @@ class NSUR {
                 }
 
                 return $plugin_template_file;
-
 
             }
         }
