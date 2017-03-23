@@ -13,7 +13,7 @@ Allow the public to register user accounts on Subsites within a Network (MultiSi
 
 WordPress Network (Multisite) installations by default only allow user registration for the whole Network, e.g. users can register for the main site and not the other sites on the network.  This plugin allows you to allow the public to register on individual sites within a Network (MultiSite) and not require them to register on the main Network site before any of the other sub-sites.
 
-You can override the template used for the ../local-signup page but creating a template with the file 'page-signup.php' and add this to either the parent or child theme.
+You can override the template used for the ../local-signup page by creating a template with the file 'page-signup.php' and add this to either the parent or child theme.
 
 
 == Installation ==
