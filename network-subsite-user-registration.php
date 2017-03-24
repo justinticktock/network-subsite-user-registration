@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.3.1
+Version: 1.3.4.5
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -35,8 +35,6 @@ class NSUR {
              * @return void
              */
             private function __construct() {            
-
-
 
                     $this->plugin_full_path = __FILE__ ;
 
@@ -110,6 +108,12 @@ class NSUR {
                     define( 'NSUR_PROMPT_DELAY_IN_DAYS', 30);
                     define( 'NSUR_PROMPT_ARGUMENT', 'nsur_hide_notice');
 
+                    // plugin version                                    
+                    $plugin_current_version = get_option( 'nsur_plugin_version' );
+                    define( 'NSUR_PLUGIN_CURRENT_VERSION', $plugin_current_version);  
+                    
+                    $plugin_new_version =  $this->plugin_get_version();                                    
+                    define( 'NSUR_PLUGIN_NEW_VERSION', $plugin_new_version);
             }
 
             /**
@@ -180,57 +184,57 @@ class NSUR {
             }   
 
 
-/**
- * If users are already registered with the Network then simply add them
- * to this new site. 
- *
- * @return $result or drops out
- */
-public function nsur_add_exting_user( $result ) {
+            /**
+             * If users are already registered with the Network then simply add them
+             * to this new site. 
+             *
+             * @return $result or drops out
+             */
+            public function nsur_add_exting_user( $result ) {
 
-    if ( is_user_logged_in() ) {
-        return $result;
-    }
+                if ( is_user_logged_in() ) {
+                    return $result;
+                }
 
-    $submitted_user_email = $result['user_email'];
-    $original_error = $result['errors'];  
+                $submitted_user_email = $result['user_email'];
+                $original_error = $result['errors'];  
 
-      foreach( $original_error->get_error_codes() as $code ){
-         foreach(  $original_error->get_error_messages( $code ) as $message ){  
-               if( $code != 'user_email' && $message == __( 'Sorry, that username already exists!') ){                    
-                    $user = get_user_by( 'email', $submitted_user_email );
-                    $user_id = $user->ID;
-                    $blog_id = get_current_blog_id();
-                    add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
-                    $user_blogs = get_blogs_of_user( $user_id );
+                  foreach( $original_error->get_error_codes() as $code ){
+                     foreach(  $original_error->get_error_messages( $code ) as $message ){  
+                           if( $code != 'user_email' && $message == __( 'Sorry, that username already exists!') ){                    
+                                $user = get_user_by( 'email', $submitted_user_email );
+                                $user_id = $user->ID;
+                                $blog_id = get_current_blog_id();
+                                add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+                                $user_blogs = get_blogs_of_user( $user_id );
 
-                    $user_blogs_sorted = array();
-                    foreach ( $user_blogs AS $user_blog ) {
-                            $user_blogs_sorted[ $user_blog->blogname ] = $user_blog->siteurl;
-                    }
+                                $user_blogs_sorted = array();
+                                foreach ( $user_blogs AS $user_blog ) {
+                                        $user_blogs_sorted[ $user_blog->blogname ] = $user_blog->siteurl;
+                                }
 
-                    // A real quick way to do a case-insensitive sort of an array keyed by strings: 
-                    uksort($user_blogs_sorted , "strnatcasecmp");
+                                // A real quick way to do a case-insensitive sort of an array keyed by strings: 
+                                uksort($user_blogs_sorted , "strnatcasecmp");
 
-                    $html = "<h1>";
-                    $html .= sprintf(  __('Hi %1$s you have been added to this site, your current sites on the Network are:', 'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" );
-                    $html .= "</h1></Br><ul>";
-                    foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
-                        if ( ! is_main_site( $user_blog->userblog_id ) ) {
-                                    $html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
-                            }
-                    }
-                    $html .= "</ul>";    
+                                $html = "<h1>";
+                                $html .= sprintf(  __('Hi %1$s you have been added to this site, your current sites on the Network are:', 'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" );
+                                $html .= "</h1></Br><ul>";
+                                foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
+                                    if ( ! is_main_site( $user_blog->userblog_id ) ) {
+                                                $html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
+                                        }
+                                }
+                                $html .= "</ul>";    
 
-                    die( $html );
+                                die( $html );
 
-               }
-         }
-    }   
+                           }
+                     }
+                }   
 
-    return $result;  
+                return $result;  
 
-}
+            }
 
             /**
              * Initialise the plugin by handling upgrades
@@ -242,26 +246,9 @@ public function nsur_add_exting_user( $result ) {
                     //Registers user installation date/time on first use
                     $this->action_init_store_user_meta();
 
-                    $plugin_current_version = get_option( 'nsur_plugin_version' );
-                    $plugin_new_version =  $this->plugin_get_version();
-
-
                     // Admin notice hide prompt notice catch
                     $this->catch_hide_notice();
-
-                    if ( empty($plugin_current_version) || $plugin_current_version < $plugin_new_version ) {
-
-                        $plugin_current_version = isset( $plugin_current_version ) ? $plugin_current_version : 0;
-
-                        $this->upgrade( $plugin_current_version );
-
-                        // set default options if not already set..
-                        $this->plugin_do_on_activation();
-
-                        // Update the option again after upgrade() changes and set the current plugin revision	
-                        update_option('nsur_plugin_version', $plugin_new_version ); 
-                    }
-
+                    
             }
 
             /**
@@ -287,7 +274,7 @@ public function nsur_add_exting_user( $result ) {
                      */
                 
                     if ( version_compare( $current_plugin_version, '1.4', '<') ) {
-                            flush_rewrite_rules();
+                            flush_rewrite_rules( );                     
                     }
             }
 
@@ -325,7 +312,17 @@ public function nsur_add_exting_user( $result ) {
                     // add rewrite on the frontend and amdmin side for any furture flush of the rewrites
                     // the query variable 'nsur_signup' is used
                     add_rewrite_rule( 'local-signup/?$', 'index.php?nsur_signup=true', 'top' );
-                    
+
+                    /* 
+                     * Allow for upgrade code from older versions
+                     */
+                    if ( version_compare( NSUR_PLUGIN_CURRENT_VERSION, NSUR_PLUGIN_NEW_VERSION, '<') )  {
+
+                        $this->upgrade( NSUR_PLUGIN_CURRENT_VERSION );
+
+                        // Update the option again after upgrade() changes and set the current plugin revision	
+                        update_option( 'nsur_plugin_version', NSUR_PLUGIN_NEW_VERSION ); 
+                    }
             }
 
 
@@ -369,11 +366,9 @@ public function nsur_add_exting_user( $result ) {
             public function plugin_do_on_activation() {
 
                     // Record plugin activation date.
-                    add_option('nsur_install_date',  time() ); 
+                    add_option( 'nsur_install_date',  time() ); 
 
-                    // create the plugin_version store option if not already present.
-                    $plugin_version = $this->plugin_get_version();
-                    update_option('nsur_plugin_version', $plugin_version ); 
+                    flush_rewrite_rules( );
 
             }
 
@@ -383,10 +378,10 @@ public function nsur_add_exting_user( $result ) {
              * @access public
              * @return $plugin_version
              */	
-            public function plugin_get_version() {
-
+            public function plugin_get_version( ) {
+                
+                    require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
                     $plugin_data = get_plugin_data( $this->plugin_full_path );	
-
                     $plugin_version = $plugin_data[ 'Version' ];
 
                     return filter_var( $plugin_version, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
@@ -398,7 +393,7 @@ public function nsur_add_exting_user( $result ) {
              * @access public
              * @return $plugin_file
              */	
-            public function get_plugin_file() {
+            public function get_plugin_file( ) {
 
                     $plugin_data = get_plugin_data( $this->plugin_full_path );	
                     $plugin_name = $plugin_data['Name'];
@@ -732,8 +727,8 @@ NSUR::get_instance();
 
 // Plugin Activation
 function nsur_activation( ) {
-    $nsur = NSUR::get_instance();
-    flush_rewrite_rules( );
+    $nsur = NSUR::get_instance( );
+    $nsur->plugin_do_on_activation( );
 }
 register_activation_hook( __FILE__, 'nsur_activation' );
 
