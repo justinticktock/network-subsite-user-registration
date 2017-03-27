@@ -12,6 +12,7 @@ License: GPLv2 or later
 Network: true
 */
 
+
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
@@ -88,7 +89,7 @@ class NSUR {
                     add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ) );
 
                     // check and add users if already on the network 
-                    add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_add_exting_user' ) );
+                    add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_add_existing_user' ) );
 
             }
 
@@ -190,24 +191,49 @@ class NSUR {
              *
              * @return $result or drops out
              */
-            public function nsur_add_exting_user( $result ) {
+            public function nsur_add_existing_user( $result ) {
 
                 if ( is_user_logged_in() ) {
                     return $result;
                 }
-
+//die(var_dump($result));
+//die(var_dump($result['errors']));
                 $submitted_user_email = $result['user_email'];
+                $submitted_user_name = $result['user_name'];
                 $original_error = $result['errors'];  
 
-                  foreach( $original_error->get_error_codes() as $code ){
-                     foreach(  $original_error->get_error_messages( $code ) as $message ){  
-                           if( $code != 'user_email' && $message == __( 'Sorry, that username already exists!') ){                    
-                                $user = get_user_by( 'email', $submitted_user_email );
-                                $user_id = $user->ID;
+                
+                // we are basing the existing user on the email address field
+                foreach( $original_error->get_error_codes() as $code ){
+
+
+                   foreach(  $original_error->get_error_messages( $code ) as $message ){  
+
+                        // Find if user exists based on username from signup form and collect their email address
+                        if( $code == 'user_name' && $message == __( 'Sorry, that username already exists!') ){                    
+                            $user = get_user_by( 'login', $submitted_user_name );
+                            $existing_user_email = $user->user_email;
+                        }
+
+                        // Find if user exists based on email address from signup form
+                        // email is the basis of how we are adding the user
+                        if( $code == 'user_email' && $message == __( 'Sorry, that email address is already used!') ){                    
+                           $user = get_user_by( 'email', $submitted_user_email );
+                           $user_id = $user->ID;
+                        }
+
+                        // finalise user registration to this site and show list of sites registered
+                        // if we have an existing registered email and the user name provided has not been used
+                        // we register the email address to this site imediately
+                        if ( $user_id 
+                             && ( empty( $existing_user_email ) 
+                                  || $existing_user_email == $submitted_user_email 
+                                ) 
+                            ) {
+                            
                                 $blog_id = get_current_blog_id();
                                 add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
                                 $user_blogs = get_blogs_of_user( $user_id );
-
                                 $user_blogs_sorted = array();
                                 foreach ( $user_blogs AS $user_blog ) {
                                         $user_blogs_sorted[ $user_blog->blogname ] = $user_blog->siteurl;
@@ -227,9 +253,8 @@ class NSUR {
                                 $html .= "</ul>";    
 
                                 die( $html );
-
-                           }
-                     }
+                        }            
+                   }             
                 }   
 
                 return $result;  
@@ -298,7 +323,8 @@ class NSUR {
              */
             public function nsur_signup_page( $url ) {
 
-                return site_url('/local-signup/') ;
+                  return site_url('/local-signup/') ;
+                  
             }
 
 
@@ -351,7 +377,7 @@ class NSUR {
              */
             public function parse_request( &$wp ) {
                     if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {                                    
-                        include( $this->get_signup_template() );
+                        include( NSUR_MYPLUGINNAME_PATH . $this->get_signup_template() );
                         exit();
                     }
             }
@@ -631,7 +657,8 @@ class NSUR {
              * Return the signup template this can be overidden by the Theme
              *
              * @access public
-             * @return $template, either a custom template for signup or the template given.
+             * @return $template, either a custom template for signup or the 
+             *          template, relative location given within the site
              */
             public function get_signup_template( ) {     
  
@@ -654,7 +681,7 @@ class NSUR {
                     }    
 
                     // overwrite the Wordpress standard login page template 'wp-signup.php'
-                    return $plugin_template_file = NSUR_MYPLUGINNAME_PATH . "template/$custom_page_signup_template";
+                    return $plugin_template_file = "template/$custom_page_signup_template";
 
             }
 
@@ -663,7 +690,7 @@ class NSUR {
              * Finds a custom template is available, if present allows the child or 
              * parent theme to override the plugin templates.
              *
-             * @return   False if not found otherwise the template file location
+             * @return   False if not found otherwise the template file relative location given within the site
              */
             public function find_custom_template( $template_wanted ) {
 
@@ -689,7 +716,7 @@ class NSUR {
                             if ( file_exists( NSUR_MYPLUGINNAME_PATH . "template/$template_wanted" ) ) {
 
                                     // we load the template from the 'templates' sub-directory of the directory this file is in                                
-                                    $plugin_template_file = NSUR_MYPLUGINNAME_PATH . "template/$template_wanted";
+                                    $plugin_template_file = "template/$template_wanted";
                             }
 
                     }
@@ -765,3 +792,5 @@ if ( is_multisite( ) ) {
 
     }
 }
+
+

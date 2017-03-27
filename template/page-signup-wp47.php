@@ -329,7 +329,7 @@ function signup_another_blog( $blogname = '', $blog_title = '', $errors = '' ) {
 	<?php } ?>
 
 	<p><?php _e( 'If you&#8217;re not going to use a great site domain, leave it for a new user. Now have at it!' ) ?></p>
-	<form id="setupform" method="post" action="local-signup">
+	<form id="setupform" method="post" action=""><!-- nsur plugin drops the action -->		
 		<input type="hidden" name="stage" value="gimmeanotherblog" />
 		<?php
 		/**
@@ -499,8 +499,10 @@ function confirm_another_blog_signup( $domain, $path, $blog_title, $user_name, $
  * @param string          $user_email The user's email.
  * @param WP_Error|string $errors     A WP_Error object containing existing errors. Defaults to empty string.
  */
-function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
-	global $active_signup;
+function signup_user( $user_name = '', $user_email = '', $errors = '' ) {       
+        global $active_signup;
+        $active_signup = get_site_option( 'registration', 'none' );
+        $active_signup = apply_filters( 'wpmu_active_signup', $active_signup );
 
 	if ( !is_wp_error($errors) )
 		$errors = new WP_Error();
@@ -533,11 +535,11 @@ function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
 
 	?>
 
-	<h2><?php
+	<h2><?php       
 		/* translators: %s: name of the network */
 		printf( __( 'Get your own %s account in seconds' ), get_network()->site_name );
 	?></h2>
-	<form id="setupform" method="post" action="local-signup" novalidate="novalidate">
+	<form id="setupform" method="post" action="" novalidate="novalidate"><!-- nsur plugin drops the action -->	
 		<input type="hidden" name="stage" value="validate-user-signup" />
 		<?php
 		/** This action is documented in wp-signup.php */
@@ -664,7 +666,7 @@ function signup_blog($user_name = '', $user_email = '', $blogname = '', $blog_ti
 	if ( empty($blogname) )
 		$blogname = $user_name;
 	?>
-	<form id="setupform" method="post" action="local-signup">
+	<form id="setupform" method="post" action="" ><!-- nsur plugin drops the action -->	
 		<input type="hidden" name="stage" value="validate-blog-signup" />
 		<input type="hidden" name="user_name" value="<?php echo esc_attr($user_name) ?>" />
 		<input type="hidden" name="user_email" value="<?php echo esc_attr($user_email) ?>" />
