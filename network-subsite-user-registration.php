@@ -209,7 +209,7 @@ class NSUR {
 
                    foreach(  $original_error->get_error_messages( $code ) as $message ){  
 
-                        // Find if user exists based on username from signup form and collect their email address
+                        // Find if user exists based on username from the signup form and collect their email address
                         if( $code == 'user_name' && $message == __( 'Sorry, that username already exists!') ){                    
                             $user = get_user_by( 'login', $submitted_user_name );
                             $existing_user_email = $user->user_email;
@@ -242,9 +242,11 @@ class NSUR {
                                 // A real quick way to do a case-insensitive sort of an array keyed by strings: 
                                 uksort($user_blogs_sorted , "strnatcasecmp");
 
-                                $html = "<h1>";
-                                $html .= sprintf(  __('Hi %1$s you have been added to this site, your current sites on the Network are:', 'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" );
-                                $html .= "</h1></Br><ul>";
+                                $html = "<h1>";                               
+                                $html .= sprintf(  __('Hi %1$s, '
+                                        . '</Br>You have been added to this site with '
+                                        . '</Br>name "%2$s" , your current sites on the Network are:', 
+                                        'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" , $user->user_login );
                                 foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
                                     if ( ! is_main_site( $user_blog->userblog_id ) ) {
                                                 $html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
@@ -253,11 +255,11 @@ class NSUR {
                                 $html .= "</ul>";    
 
                                 die( $html );
-                        }            
-                   }             
-                }   
+                        }
+                   }
+                }
 
-                return $result;  
+                return $result;
 
             }
 
