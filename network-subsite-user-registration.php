@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.3.4.5
+Version: 1.3.4.6
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
