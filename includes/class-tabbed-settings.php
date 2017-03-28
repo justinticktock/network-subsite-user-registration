@@ -3,7 +3,7 @@
  * Plugin tabbed settings option class for WordPress themes.
  *
  * @package   class-tabbed-settings.php
- * @version   1.2.1
+ * @version   1.2.2
  * @author    Justin Fletcher <justin@justinandco.com>
  * @copyright Copyright ( c ) 2014, Justin Fletcher
  * @license   http://opensource.org/licenses/gpl-2.0.php GPL v2 or later
@@ -275,7 +275,7 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		/**
 		 * field_checkbox_option 
 		 *
-		 * @param
+		 * @param array of arguments to pass the option name to render the form field.
                  *  'name'      =   option name
                  *  'std'       =   default value to initialise the option to.                                                                           
                  *  'value'     =   value to overwrite/force the setting to.
@@ -478,20 +478,43 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		}
 		
 
-		/**
-		 * field_default_option 
+                
+                
+                
+                        
+                
+                /**
+		 * field_checkbox_option 
 		 *
 		 * @param array of arguments to pass the option name to render the form field.
+                 *  'name'      =   option name
+                 *  'std'       =   default value to initialise the option to.                                                                           
+                 *  'value'     =   value to overwrite/force the setting to.
+                 *  'label'     =   left of the setting
+                 *  'desc'      =   for text under the setting.
+                 *  'type'      =   'field_checkbox_option'
+                 *  'cb_label'  =   right of the setting
+                 *  'disabled'  =   if true setting is disabled
+                 * 
 		 * @return void
 		 */
 		public function field_default_option( array $args  ) {
-			$option   = $args['option'];
-			$value = get_option( $option['name'] );
-			?><input id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" type="text" name="<?php echo esc_html( $option['name'] ); ?>" value="<?php esc_attr_e( $value ); ?>" /><?php
+                    $defaults = array(
+                                        'value' => null,
+                                        'disabled' => false,
+                    );
 
-			if ( ! empty( $option['desc'] ) ) {
-				echo ' <p class="description">' . $option['desc'] . '</p>';
-                        }
+                    $option = wp_parse_args( $args['option'], $defaults );	
+                    $option = $args['option'];
+                    // Take value if not null
+                    if( is_null( $value = $option['value'] ) ) {
+                        $value = get_option( $option['name'] );
+                    }                    
+                    ?><input id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" type="text" name="<?php echo esc_html( $option['name'] ); ?>" value="<?php esc_attr_e( $value ); ?>"  <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> /> <?php echo $option['cb_label']; ?><?php
+
+                    if ( ! empty( $option['desc'] ) ) {
+                            echo ' <p class="description">' . $option['desc'] . '</p>';
+                    }
 		}
 		
 		/**

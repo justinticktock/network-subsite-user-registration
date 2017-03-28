@@ -4,7 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-
 // Append new links to the Plugin admin side
 add_filter( 'plugin_action_links_' . NSUR::get_instance( )->plugin_file , 'nsur_plugin_action_links' );
 
@@ -58,15 +57,17 @@ class NSUR_Settings {
 				'menu'                      => 'registration-settings',    					
 				'menu_title'                => 'Registration',    		
 				'page_title'                => 'User Registration',    		
-				);				                
+				);	
                 
+                $custom_template = str_replace( WP_CONTENT_DIR, '', NSUR::get_instance()->find_custom_template('page-signup.php') );                
+
 		$settings = 	apply_filters( 'nsur_settings', 
                                         array(								
                                                 'nsur_general' => array(
                                                         'access_capability'     => 'promote_users',
                                                         'title' 		=> __( 'General', 'network-subsite-user-registration' ),
                                                         'description'           => __( 'Settings to allow the public to register with this site.', 'network-subsite-user-registration' ),
-                                                        'settings' 		=> array(		
+                                                        'settings' 		=> array(	
                                                                                         array(
                                                                                                 'name'          => 'nsur_join_site_enabled',
                                                                                                 'std'           => false,                                  
@@ -75,12 +76,26 @@ class NSUR_Settings {
                                                                                                                         . "The 'subscriber' role will be granted.", 'network-subsite-user-registration' ),
                                                                                                 'type'          => 'field_checkbox_option',                                                                                                                
                                                                                                 'cb_label'      => _x( 'Enable', 'enable the setting option.', 'network-subsite-user-registration' ), 
+                                                                                                ),		
+                                                                                        array(
+                                                                                                'name'          => 'nsur_site_theme_tempate_available',
+                                                                                                'std'           => false,                                  
+                                                                                                'value'         => $custom_template,      
+                                                                                                'disabled'      => true,
+                                                                                                'label'         => __( 'Template Found:', 'network-subsite-user-registration' ),
+                                                                                                'desc'          => __( "shows if the theme has overriden by defining a 'page-signup.php' file template.", 'network-subsite-user-registration' ),
+                                                                                                'type'          => 'field_default_option',                                                                                                                
+                                                                                              //  'cb_label'      => _x( 'Found', 'enable the setting option.', 'network-subsite-user-registration' ), 
                                                                                                 ),
                                                                             ),
                                                 ),
                                         ) );
 
-
+        if ( ! $custom_template ) {
+                // remove the option to linked back to the current site to stop it being selected
+                unset( $settings['nsur_general']['settings'][1] );
+        }
+                                        
         if ( null == self::$instance ) {
             self::$instance = new Tabbed_Settings( $settings, $config );
         }

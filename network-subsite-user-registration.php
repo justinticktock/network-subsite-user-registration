@@ -115,6 +115,12 @@ class NSUR {
                     
                     $plugin_new_version =  $this->plugin_get_version();                                    
                     define( 'NSUR_PLUGIN_NEW_VERSION', $plugin_new_version);
+                    
+                    
+                    // define standard WordPress constants incase the theme has not been loaded
+                    define('TEMPLATEPATH', get_template_directory());
+                    define('STYLESHEETPATH', get_stylesheet_directory());
+
             }
 
             /**
@@ -196,8 +202,7 @@ class NSUR {
                 if ( is_user_logged_in() ) {
                     return $result;
                 }
-//die(var_dump($result));
-//die(var_dump($result['errors']));
+
                 $submitted_user_email = $result['user_email'];
                 $submitted_user_name = $result['user_name'];
                 $original_error = $result['errors'];  
@@ -245,7 +250,7 @@ class NSUR {
                                 $html = "<h1>";                               
                                 $html .= sprintf(  __('Hi %1$s, '
                                         . '</Br>You have been added to this site with '
-                                        . '</Br>name "%2$s" , your current sites on the Network are:', 
+                                        . '</Br>name "%2$s", your current sites on the Network are:</Br></Br>', 
                                         'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" , $user->user_login );
                                 foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
                                     if ( ! is_main_site( $user_blog->userblog_id ) ) {
@@ -268,8 +273,8 @@ class NSUR {
              *
              * @return void
              */
-            public function admin_init() {
-
+            public function admin_init() {                
+                    
                     //Registers user installation date/time on first use
                     $this->action_init_store_user_meta();
 
@@ -379,7 +384,7 @@ class NSUR {
              */
             public function parse_request( &$wp ) {
                     if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {                                    
-                        include( NSUR_MYPLUGINNAME_PATH . $this->get_signup_template() );
+                        include( $this->get_signup_template() );
                         exit();
                     }
             }
@@ -660,14 +665,14 @@ class NSUR {
              *
              * @access public
              * @return $template, either a custom template for signup or the 
-             *          template, relative location given within the site
+             *          template, location given within the site
              */
             public function get_signup_template( ) {     
- 
+
                     /* Allow themes to override the signup template with the file 'page-signup.php'
                      * in either the parent or child theme.
                      */                
-                    if ( $template_found = $this->find_custom_template( 'page-signup.php' ) ) {
+                    if ( $template_found = $this->find_custom_template( 'page-signup.php' ) ) {               
                             return $template_found;
                     }
 
@@ -683,7 +688,7 @@ class NSUR {
                     }    
 
                     // overwrite the Wordpress standard login page template 'wp-signup.php'
-                    return $plugin_template_file = "template/$custom_page_signup_template";
+                    return $plugin_template_file = NSUR_MYPLUGINNAME_PATH . "template/$custom_page_signup_template";
 
             }
 
@@ -692,18 +697,16 @@ class NSUR {
              * Finds a custom template is available, if present allows the child or 
              * parent theme to override the plugin templates.
              *
-             * @return   False if not found otherwise the template file relative location given within the site
+             * @return   False if not found otherwise the template file location given within the site
              */
-            public function find_custom_template( $template_wanted ) {
-
-                    $plugin_template_file = false;    
-
+            public function find_custom_template( $template_wanted = '' ) {
+     
+                    $plugin_template_file = false;                       
                     if ( locate_template( $template_wanted ) != '' ) {
 
                             // locate_template() returns path to file
                             // if either the child theme or the parent theme have overridden the template
                             $plugin_template_file = locate_template( $template_wanted );
-
                     }
                     else {
 
@@ -718,7 +721,7 @@ class NSUR {
                             if ( file_exists( NSUR_MYPLUGINNAME_PATH . "template/$template_wanted" ) ) {
 
                                     // we load the template from the 'templates' sub-directory of the directory this file is in                                
-                                    $plugin_template_file = "template/$template_wanted";
+                                    $plugin_template_file = NSUR_MYPLUGINNAME_PATH . "template/$template_wanted";
                             }
 
                     }
@@ -794,5 +797,3 @@ if ( is_multisite( ) ) {
 
     }
 }
-
-
