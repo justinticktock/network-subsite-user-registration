@@ -92,7 +92,7 @@ class NSUR_Settings {
                                         ) );
 
         if ( ! $custom_template ) {
-                // remove the option to linked back to the current site to stop it being selected
+                // remove the 'nsur_site_theme_tempate_available' option if none found in the theme
                 unset( $settings['nsur_general']['settings'][1] );
         }
                                         

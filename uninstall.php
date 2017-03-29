@@ -23,6 +23,7 @@ if ( is_multisite( ) ) {
 // remove all database entries for currently active blog on uninstall.
 function nsur_clean_database( ) {
         delete_option( 'nsur_join_site_enabled' );
+        delete_option( 'nsur_site_theme_tempate_available' );
 
         // user specific database entries
         delete_user_meta( get_current_user_id(), 'nsur_prompt_timeout' );
