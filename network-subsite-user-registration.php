@@ -89,7 +89,12 @@ class NSUR {
                     add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ) );
 
                     // check and add users if already on the network 
-                    add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_add_existing_user' ) );
+                    add_filter( 'wpmu_validate_user_signup', array( $this, 'nsur_register_existing_user' ) );
+					
+                    // auto register logged in user attempting to go to a different subsite admin area
+                    // priority of the hook is 98 to be just before the wordpress notice.
+                    add_action( 'admin_page_access_denied', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
+                    //add_action( 'init', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
 
             }
 
@@ -188,82 +193,90 @@ class NSUR {
 
 
             /**
-             * If users are already registered with the Network then simply add them
-             * to this new site. 
+             * If users are not logged into the Network but already registered with the Network 
+			 * then if add them to this new site after a few checks
              *
              * @return $result or drops out
              */
-            public function nsur_add_existing_user( $result ) {
+            public function nsur_register_existing_user( $result ) {
 
-                if ( is_user_logged_in() ) {
+                    if ( is_user_logged_in() ) {
+                            return $result;
+                    }
+
+                    $submitted_user_email = $result['user_email'];
+                    $submitted_user_name = $result['user_name'];
+                    $original_error = $result['errors'];  
+
+
+                    // we are basing the existing user on the email address field
+                    foreach( $original_error->get_error_codes() as $code ){
+
+
+                            foreach(  $original_error->get_error_messages( $code ) as $message ){  
+
+                                    // Find if user exists based on username from the signup form and collect their email address
+                                    if( $code == 'user_name' && $message == __( 'Sorry, that username already exists!') ){                    
+                                            $user = get_user_by( 'login', $submitted_user_name );
+                                            $existing_user_email = $user->user_email;
+                                    }
+
+                                    // Find if user exists based on email address from signup form
+                                    // email is the basis of how we are adding the user
+                                    if( $code == 'user_email' && $message == __( 'Sorry, that email address is already used!') ){                    
+                                            $user = get_user_by( 'email', $submitted_user_email );
+                                            $user_id = $user->ID;
+                                    }
+
+                                    // finalise user registration to this site and show list of sites registered
+                                    // if we have an existing registered email and the user name provided has not been used
+                                    // we register the email address to this site imediately
+                                    if ( $user_id 
+                                            && ( empty( $existing_user_email ) 
+                                                 || $existing_user_email == $submitted_user_email 
+                                               ) 
+                                           ) {
+                                                       $this->nsur_add_user_to_site( $user_id );
+                                    }
+                            }
+                    }
+
                     return $result;
-                }
-
-                $submitted_user_email = $result['user_email'];
-                $submitted_user_name = $result['user_name'];
-                $original_error = $result['errors'];  
-
-                
-                // we are basing the existing user on the email address field
-                foreach( $original_error->get_error_codes() as $code ){
-
-
-                   foreach(  $original_error->get_error_messages( $code ) as $message ){  
-
-                        // Find if user exists based on username from the signup form and collect their email address
-                        if( $code == 'user_name' && $message == __( 'Sorry, that username already exists!') ){                    
-                            $user = get_user_by( 'login', $submitted_user_name );
-                            $existing_user_email = $user->user_email;
-                        }
-
-                        // Find if user exists based on email address from signup form
-                        // email is the basis of how we are adding the user
-                        if( $code == 'user_email' && $message == __( 'Sorry, that email address is already used!') ){                    
-                           $user = get_user_by( 'email', $submitted_user_email );
-                           $user_id = $user->ID;
-                        }
-
-                        // finalise user registration to this site and show list of sites registered
-                        // if we have an existing registered email and the user name provided has not been used
-                        // we register the email address to this site imediately
-                        if ( $user_id 
-                             && ( empty( $existing_user_email ) 
-                                  || $existing_user_email == $submitted_user_email 
-                                ) 
-                            ) {
-                            
-                                $blog_id = get_current_blog_id();
-                                add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
-                                $user_blogs = get_blogs_of_user( $user_id );
-                                $user_blogs_sorted = array();
-                                foreach ( $user_blogs AS $user_blog ) {
-                                        $user_blogs_sorted[ $user_blog->blogname ] = $user_blog->siteurl;
-                                }
-
-                                // A real quick way to do a case-insensitive sort of an array keyed by strings: 
-                                uksort($user_blogs_sorted , "strnatcasecmp");
-
-                                $html = "<h1>";                               
-                                $html .= sprintf(  __('Hi %1$s, '
-                                        . '</Br>You have been added to this site with '
-                                        . '</Br>name "%2$s", your current sites on the Network are:</Br></Br>', 
-                                        'network-subsite-user-registration' ), "<strong>$submitted_user_email</Strong>" , $user->user_login );
-                                foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
-                                    if ( ! is_main_site( $user_blog->userblog_id ) ) {
-                                                $html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
-                                        }
-                                }
-                                $html .= "</ul>";    
-
-                                die( $html );
-                        }
-                   }
-                }
-
-                return $result;
 
             }
 
+			
+            /**
+             * If users are logged into the Network then simply add them to this new site. 
+             *
+             * @return $result or drops out
+             */
+            public function nsur_add_subsite_to_logged_in_user() {
+                    $this->nsur_add_user_to_site(  get_current_user_id() );
+            }
+
+
+            /**
+             * Add an existing user to the current Network Site and drop out after output of a
+			 * list of site is provided.
+             *
+             * @access public	 
+             * @param $user_id			 
+             * @return void
+             */
+            public function nsur_add_user_to_site( $user_id ) {
+
+                    $user = get_user_by( 'id', $user_id );
+                    $blog_id = get_current_blog_id();
+                    add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+
+                    include( NSUR_MYPLUGINNAME_PATH . 'template/page-registration-notice.php' );
+                    exit();
+
+        }
+
+
+			
             /**
              * Initialise the plugin by handling upgrades
              *
@@ -793,3 +806,10 @@ if ( is_multisite( ) ) {
 
     }
 }
+
+
+
+
+
+
+
