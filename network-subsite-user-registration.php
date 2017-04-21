@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.4
+Version: 1.5
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -48,7 +48,7 @@ class NSUR {
                     add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
 
                     /* Load the functions files. */
-                    add_action( 'plugins_loaded', array( $this, 'includes' ), 2 );
+                    add_action( 'admin_menu', array( $this, 'includes' ), 9 );
 
                     // admin prompt and drop out with warning if not a Network
                     if ( ! is_multisite() ) {
@@ -115,11 +115,7 @@ class NSUR {
                     
                     $plugin_new_version =  $this->plugin_get_version();                                    
                     define( 'NSUR_PLUGIN_NEW_VERSION', $plugin_new_version);
-                    
-                    
-                    // define standard WordPress constants incase the theme has not been loaded
-                    define('TEMPLATEPATH', get_template_directory());
-                    define('STYLESHEETPATH', get_stylesheet_directory());
+
 
             }
 
@@ -132,7 +128,7 @@ class NSUR {
 
                     // settings 
                     require_once( NSUR_MYPLUGINNAME_PATH . 'includes/settings.php' );  
-
+                    
             }
 
             /**
@@ -383,7 +379,7 @@ class NSUR {
              * @return void
              */
             public function parse_request( &$wp ) {
-                    if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {                                    
+                    if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {    
                         include( $this->get_signup_template() );
                         exit();
                     }

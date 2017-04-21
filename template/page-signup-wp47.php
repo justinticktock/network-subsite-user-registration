@@ -9,11 +9,11 @@ Template Name: Signup Page
 
 
 /** Sets up the WordPress Environment. */
-//require( dirname(__FILE__) . '/wp-load.php' );
+require_once( ABSPATH . 'wp-load.php' );
 
 add_action( 'wp_head', 'wp_no_robots' );
 
-//require( dirname( __FILE__ ) . '/wp-blog-header.php' );
+require_once( ABSPATH . 'wp-blog-header.php' );
 
 if ( is_array( get_site_option( 'illegal_names' )) && isset( $_GET[ 'new' ] ) && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) ) {
 	wp_redirect( network_home_url() );
@@ -308,7 +308,7 @@ function signup_another_blog( $blogname = '', $blog_title = '', $errors = '' ) {
 	$errors = $filtered_results['errors'];
 
 	echo '<h2>' . sprintf( __( 'Get <em>another</em> %s site in seconds' ), get_network()->site_name ) . '</h2>';
-
+	
 	if ( $errors->get_error_code() ) {
 		echo '<p>' . __( 'There was a problem, please correct the form below and try again.' ) . '</p>';
 	}
@@ -537,7 +537,7 @@ function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
 
 	<h2><?php       
 		/* translators: %s: name of the network */
-		printf( __( 'Get your own %s account in seconds' ), get_network()->site_name );
+		printf( __( 'Get your own %s account in seconds' ), get_site()->blogname );
 	?></h2>
 	<form id="setupform" method="post" action="" novalidate="novalidate"><!-- nsur plugin drops the action -->	
 		<input type="hidden" name="stage" value="validate-user-signup" />
