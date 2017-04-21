@@ -47,7 +47,7 @@ To Manually install follow these steps..
 Once installed to allow the public to register with a site within the Network..
 
 1. Set Network wide user registration within the Dashboard goto [Network Admin] > Settings > under 'Registration Settings' configure to allow User accounts to be registered.
-2. Within the Dashboard/Admin of each site that you wish to enable user registration to to [Site Amdin] > [Users] > Registration and enable the setting.
+2. Within the Dashboard/Admin of each site that you wish to enable user registration to to [Site Admin] > [Users] > Registration and enable the setting.
 3. The Public will now be able to register and login with only the sites that you set within the step (2) above.
 
 
@@ -59,11 +59,16 @@ A1) This plugin will give the user the experience of remaining on the subsite th
 
 Q2) Currently standard multisite functionality when a user attempts to register an account on a second subsite they get a message saying that the username and email already exists even though in their minds they have never been to this site before.  Can the plugin handle registration on a second, third... subsite?
 
-A2) Yes the plugin handles registration on more than one sub-site within the same network.
+A2) Yes the plugin handles registration on more than one sub-site within the same network.  
 
-So for the case where a user has already registered on subsite1 of the Network and they register on subsite2 with the same username and a different email address they will see the message “Sorry, that username already exists!“.
+So for the case where a user has already registered on subsite1 of the Network and they register on subsite2 with the same username and a different email address they will see the message "<em>Sorry, that username already exists!</em>".  
 
-This is since the plugin uses the email address as the uniqueness and proof that it’s the same user. However, if they register on subsite2 using the same email address for registration then they are given an account on subsite2. All subsites that they belong to on the Network are then listed on the screen (e.g. subsite1, subsite2 …etc) as confirmation that they are now also a ‘subscriber’ on subsite2.
+This is since the plugin uses the email address as the uniqueness and proof that it's the same user.  However, if they register on subsite2 using the same email address for registration then they are automatically given an account on subsite2.  Also once registered all subsites that they belong to on the Network are then listed on the screen (e.g. subsite1, subsite2 ...etc) as confirmation that they are now also a 'subscriber' on subsite2.
+
+
+Note: If the username given for subsite2 registration is different from their subsite1 username then the username provided is ignored so that subsite1 and subsite2 have the same original username (which is associated with the email address already).  
+
+
 
 == Screenshots ==
 
