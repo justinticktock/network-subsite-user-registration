@@ -94,7 +94,6 @@ class NSUR {
                     // auto register logged in user attempting to go to a different subsite admin area
                     // priority of the hook is 98 to be just before the wordpress notice.
                     add_action( 'admin_page_access_denied', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
-                    //add_action( 'init', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
 
             }
 
@@ -194,7 +193,8 @@ class NSUR {
 
             /**
              * If users are not logged into the Network but already registered with the Network 
-			 * then if add them to this new site after a few checks
+             * then if add them to this new site after a few checks and return a list of sites
+             * that they belong to.
              *
              * @return $result or drops out
              */
@@ -236,7 +236,9 @@ class NSUR {
                                                  || $existing_user_email == $submitted_user_email 
                                                ) 
                                            ) {
-                                                       $this->nsur_add_user_to_site( $user_id );
+                                            $this->nsur_add_user_to_site( $user_id );
+                                            include( NSUR_MYPLUGINNAME_PATH . 'template/page-registration-notice.php' );
+                                            exit();
                                     }
                             }
                     }
@@ -245,34 +247,17 @@ class NSUR {
 
             }
 
-			
             /**
-             * If users are logged into the Network then simply add them to this new site. 
-             *
-             * @return $result or drops out
-             */
-            public function nsur_add_subsite_to_logged_in_user() {
-                    $this->nsur_add_user_to_site(  get_current_user_id() );
-            }
-
-
-            /**
-             * Add an existing user to the current Network Site and drop out after output of a
-			 * list of site is provided.
+             * Add an existing user to the current Network Site
              *
              * @access public	 
              * @param $user_id			 
              * @return void
              */
             public function nsur_add_user_to_site( $user_id ) {
-
                     $user = get_user_by( 'id', $user_id );
                     $blog_id = get_current_blog_id();
                     add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
-
-                    include( NSUR_MYPLUGINNAME_PATH . 'template/page-registration-notice.php' );
-                    exit();
-
         }
 
 
@@ -319,14 +304,22 @@ class NSUR {
                     }
             }
 
-             /**
-             * Redirect To New Signup Page
-             *
-             * @access public	 
-             * @return void
-             */
-            public function nsur_redirect_signup_redirect() {
-                    wp_redirect( get_site_url() );
+            /**
+            * Redirect To New Signup Page
+            *
+            * @access public	 
+            * @return void
+            */
+            public function nsur_add_subsite_to_logged_in_user() {
+
+                    // add the user automatically 
+                    $this->nsur_add_user_to_site( get_current_user_id() );
+
+                    // then redirect back to the current page to stop WordPress default "you don't have access" 
+                    // from the first attempt.
+                    $parts = parse_url( home_url() );
+                    $current_uri = "{$parts['scheme']}://{$parts['host']}" . add_query_arg( NULL, NULL );        
+                    wp_redirect( $current_uri );
                     exit();
             }
 
