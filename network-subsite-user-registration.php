@@ -136,7 +136,7 @@ class NSUR {
             }
 
             /**
-             * remote the users can register if defined in settings 
+             * remove the users can register if defined in settings 
              * and not on the main site.  If on the main site the network
              * settings will continue to define the function.
              *
@@ -312,15 +312,21 @@ class NSUR {
             */
             public function nsur_add_subsite_to_logged_in_user() {
 
-                    // add the user automatically 
-                    $this->nsur_add_user_to_site( get_current_user_id() );
 
-                    // then redirect back to the current page to stop WordPress default "you don't have access" 
-                    // from the first attempt.
-                    $parts = parse_url( home_url() );
-                    $current_uri = "{$parts['scheme']}://{$parts['host']}" . add_query_arg( NULL, NULL );        
-                    wp_redirect( $current_uri );
-                    exit();
+                    $local_join_site_enabled = get_option( 'nsur_join_site_enabled', false );
+
+                    if ( $local_join_site_enabled ) {
+                            // add the user automatically 
+                            $this->nsur_add_user_to_site( get_current_user_id() );
+
+                            // then redirect back to the current page to stop WordPress default "you don't have access" 
+                            // from the first attempt.
+                            $parts = parse_url( home_url() );
+                            $current_uri = "{$parts['scheme']}://{$parts['host']}" . add_query_arg( NULL, NULL );        
+                            wp_redirect( $current_uri );
+                            exit();
+                    }                
+
             }
 
 
