@@ -11,8 +11,7 @@ Domain Path: /languages/
 License: GPLv2 or later
 Network: true
 */
-
-
+    
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
@@ -312,10 +311,16 @@ class NSUR {
             */
             public function nsur_add_subsite_to_logged_in_user() {
 
-
+                    if ( is_user_member_of_blog() ) {
+                            return;
+                    }
+                    
+                    $network_user_registration_configured = $this->network_user_registration_enabled();
                     $local_join_site_enabled = get_option( 'nsur_join_site_enabled', false );
 
-                    if ( $local_join_site_enabled ) {
+                    if ( $network_user_registration_configured     
+                         && $local_join_site_enabled
+                    ) {
                             // add the user automatically 
                             $this->nsur_add_user_to_site( get_current_user_id() );
 
@@ -326,7 +331,6 @@ class NSUR {
                             wp_redirect( $current_uri );
                             exit();
                     }                
-
             }
 
 
@@ -583,7 +587,7 @@ class NSUR {
              * @access public
              * @return null
              */
-            public function call_admin_user_registration_not_enabled( ) {                         
+            public function network_user_registration_enabled( ) {                         
 
 
                     $main_site_id = $this->get_network_main_site_id();
@@ -596,9 +600,25 @@ class NSUR {
                     $network_user_registration_configured = in_array( get_site_option( 'registration' ), array( 'user', 'all' ) );
                     restore_current_blog();
 
+                    return $network_user_registration_configured;
+
+            }   
+            
+            
+            /**
+             * Message for Network to allow user registration requirement
+             *
+             * @access public
+             * @return null
+             */
+            public function call_admin_user_registration_not_enabled( ) {                         
+
+                    $network_user_registration_configured = $this->network_user_registration_enabled();
                     $screen = get_current_screen();               
 
-                    if ( ! $network_user_registration_configured && ( $screen->id == 'users_page_registration-settings' ) ) {               
+                    if ( ! $network_user_registration_configured 
+                            && ( $screen->id == 'users_page_registration-settings' ) 
+                    ) {               
                             add_action( 'admin_notices', array( $this, 'admin_user_registration_not_enabled' ));
                     }  
 
@@ -805,10 +825,3 @@ if ( is_multisite( ) ) {
 
     }
 }
-
-
-
-
-
-
-
