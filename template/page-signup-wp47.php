@@ -4,7 +4,7 @@ Template Name: Signup Page
 */
 
 /**
- * This is a cut down version of the WordPress 4.7.2 wp-signup.php template
+ * This is a modified version of the WordPress 4.7 wp-signup.php template
  */
 
 
@@ -40,6 +40,13 @@ if ( !is_multisite() ) {
 	die();
 }
 
+// nsur commented out
+//if ( !is_main_site() ) {
+//	wp_redirect( network_site_url( 'wp-signup.php' ) );
+//	die();
+//}
+
+Global $wp_query;  // nsur added
 // Fix for page title
 $wp_query->is_404 = false;
 
@@ -308,7 +315,7 @@ function signup_another_blog( $blogname = '', $blog_title = '', $errors = '' ) {
 	$errors = $filtered_results['errors'];
 
 	echo '<h2>' . sprintf( __( 'Get <em>another</em> %s site in seconds' ), get_network()->site_name ) . '</h2>';
-	
+
 	if ( $errors->get_error_code() ) {
 		echo '<p>' . __( 'There was a problem, please correct the form below and try again.' ) . '</p>';
 	}
@@ -501,8 +508,8 @@ function confirm_another_blog_signup( $domain, $path, $blog_title, $user_name, $
  */
 function signup_user( $user_name = '', $user_email = '', $errors = '' ) {       
         global $active_signup;
-        $active_signup = get_site_option( 'registration', 'none' );
-        $active_signup = apply_filters( 'wpmu_active_signup', $active_signup );
+        $active_signup = get_site_option( 'registration', 'none' );				//nsur added
+        $active_signup = apply_filters( 'wpmu_active_signup', $active_signup );	//nsur added
 
 	if ( !is_wp_error($errors) )
 		$errors = new WP_Error();
@@ -535,9 +542,9 @@ function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
 
 	?>
 
-	<h2><?php       
+	<h2><?php
 		/* translators: %s: name of the network */
-		printf( __( 'Get your own %s account in seconds' ), get_site()->blogname );
+		printf( __( 'Get your own %s account in seconds' ), get_site()->blogname ); //nsur changed
 	?></h2>
 	<form id="setupform" method="post" action="" novalidate="novalidate"><!-- nsur plugin drops the action -->	
 		<input type="hidden" name="stage" value="validate-user-signup" />
