@@ -36,17 +36,21 @@ get_header( );
           '<strong><em>' .  $user->user_login . '</strong></em>'
         );  
 
-        foreach ( $user_blogs_sorted AS $sitename => $siteurl ) {
-                if ( ! is_main_site( $user_blog->userblog_id ) ) {
-                                        //$html .=  '<li><h2><strong><a href="' . wp_login_url($siteurl )   . '" target="_blank" >' . $sitename  . '</a></strong></h2></li>';
-                        ?>
-                        <h2>
-                            <strong>
-                                <a href=""<?php echo wp_login_url($siteurl )?>" target="_blank" ><?php echo $sitename ?></a>
-                            </strong>
-                        </h2>
-                        <?php 
-                }
+        foreach ( $user_blogs AS $user_blog ) {
+                        
+                // find the login page for each site in the loop
+                switch_to_blog( $user_blog->userblog_id );
+                $current_login_url = wp_login_url( );
+                restore_current_blog( );
+
+                $sitename = $user_blog->blogname;
+                 ?>
+                <h2>
+                    <strong>
+                        <a href="<?php echo $current_login_url ?>" ><?php echo $sitename ?></a>
+                    </strong>
+                </h2>
+                <?php 
         }
         ?>
 </div>

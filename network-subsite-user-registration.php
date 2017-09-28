@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.5
+Version: 1.6
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -192,7 +192,7 @@ class NSUR {
 
             /**
              * If users are not logged into the Network but already registered with the Network 
-             * then if add them to this new site after a few checks and return a list of sites
+             * add them to this new site after a few checks and return a list of sites
              * that they belong to.
              *
              * @return $result or drops out
@@ -217,6 +217,7 @@ class NSUR {
                                     // Find if user exists based on username from the signup form and collect their email address
                                     if( $code == 'user_name' && $message == __( 'Sorry, that username already exists!') ){                    
                                             $user = get_user_by( 'login', $submitted_user_name );
+                                            $user_id = $user->ID;
                                             $existing_user_email = $user->user_email;
                                     }
 
