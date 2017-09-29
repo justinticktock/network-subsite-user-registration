@@ -708,7 +708,9 @@ class NSUR {
                     /* Otherwise the plugin template is provided for the sign-up page 
                      * and this is based on the version of WordPress so we can allow for variations.
                      */
-                    if ( version_compare( get_bloginfo( 'version' ), '4.7', '>=') ) {
+                    if ( version_compare( get_bloginfo( 'version' ), '4.9', '>=') ) {
+                                $custom_page_signup_template = 'page-signup-wp49.php' ;
+					} elseif ( version_compare( get_bloginfo( 'version' ), '4.7', '>=') ) {
                                 $custom_page_signup_template = 'page-signup-wp47.php' ;
                     } else {
                             // else dropout with a message that we are not supporting the version of WordPress
