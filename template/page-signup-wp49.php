@@ -9,11 +9,11 @@ Template Name: Signup Page
 
 
 /** Sets up the WordPress Environment. */
-require_once( ABSPATH . 'wp-load.php' );
+require_once( ABSPATH . 'wp-load.php' );		//nsur changed to use ABSPATH
 
 add_action( 'wp_head', 'wp_no_robots' );
 
-require_once( ABSPATH . 'wp-blog-header.php' );
+require_once( ABSPATH . 'wp-blog-header.php' );	//nsur changed to use ABSPATH
 
 if ( is_array( get_site_option( 'illegal_names' )) && isset( $_GET[ 'new' ] ) && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) ) {
 	wp_redirect( network_home_url() );
@@ -86,7 +86,7 @@ function wpmu_signup_stylesheet() {
 add_action( 'wp_head', 'wpmu_signup_stylesheet' );
 get_header( 'wp-signup' );
 
-/** 
+/**
  * Fires before the site sign-up form.
  *
  * @since 3.0.0
@@ -480,10 +480,13 @@ function confirm_another_blog_signup( $domain, $path, $blog_title, $user_name, $
 	?></h2>
 	<p>
 		<?php printf(
-			/* translators: 1: home URL, 2: site address, 3: login URL, 4: username */
-			__( '<a href="%1$s">%2$s</a> is your new site. <a href="%3$s">Log in</a> as &#8220;%4$s&#8221; using your existing password.' ),
-			esc_url( $home_url ),
-			untrailingslashit( $domain . $path ),
+			/* translators: 1: link to new site, 2: login URL, 3: username */
+			__( '%1$s is your new site. <a href="%2$s">Log in</a> as &#8220;%3$s&#8221; using your existing password.' ),
+			sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( $home_url ),
+				untrailingslashit( $domain . $path )
+			),
 			esc_url( $login_url ),
 			$user_name
 		); ?>
@@ -506,10 +509,10 @@ function confirm_another_blog_signup( $domain, $path, $blog_title, $user_name, $
  * @param string          $user_email The user's email.
  * @param WP_Error|string $errors     A WP_Error object containing existing errors. Defaults to empty string.
  */
-function signup_user( $user_name = '', $user_email = '', $errors = '' ) {       
-        global $active_signup;
-        $active_signup = get_site_option( 'registration', 'none' );				//nsur added
-        $active_signup = apply_filters( 'wpmu_active_signup', $active_signup );	//nsur added
+function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
+	global $active_signup;
+	$active_signup = get_site_option( 'registration', 'none' );				//nsur added
+	$active_signup = apply_filters( 'wpmu_active_signup', $active_signup );	//nsur added
 
 	if ( !is_wp_error($errors) )
 		$errors = new WP_Error();
