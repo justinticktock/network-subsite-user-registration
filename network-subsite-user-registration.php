@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 1.7
+Version: 1.9
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -94,6 +94,8 @@ class NSUR {
                     // priority of the hook is 98 to be just before the wordpress notice.
                     add_action( 'admin_page_access_denied', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
 
+                    // auto register during a login attempt to a different Network subsite when registration is enabled
+                    add_action( 'wp_login', array( $this, 'nsur_add_subsite_to_logged_in_user' ) );					
             }
 
             /**
