@@ -3,7 +3,7 @@
  * Plugin tabbed settings option class for WordPress themes.
  *
  * @package   class-tabbed-settings.php
- * @version   1.2.2
+ * @version   1.2.3
  * @author    Justin Fletcher <justin@justinandco.com>
  * @copyright Copyright ( c ) 2014, Justin Fletcher
  * @license   http://opensource.org/licenses/gpl-2.0.php GPL v2 or later
@@ -528,7 +528,6 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		
 			$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : $this->default_tab_key;
 
-			screen_icon( );
 			echo '<h2 class="nav-tab-wrapper">';
 			foreach ( $this->settings as $tab_key => $tab_options_array ) {
 				$active = $current_tab == $tab_key ? 'nav-tab-active' : '';
@@ -551,7 +550,6 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 
 			$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : $this->default_tab_key;
 			$form_action = "options.php"; 
-			screen_icon( );
 			echo '<h2 class="nav-tab-wrapper">';
 			foreach ( $this->settings as $tab_key => $tab_options_array ) {
 				if ( $current_tab == $tab_key ) {
