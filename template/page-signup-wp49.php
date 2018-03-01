@@ -336,7 +336,7 @@ function signup_another_blog( $blogname = '', $blog_title = '', $errors = '' ) {
 	<?php } ?>
 
 	<p><?php _e( 'If you&#8217;re not going to use a great site domain, leave it for a new user. Now have at it!' ) ?></p>
-	<form id="setupform" method="post" action=""><!-- nsur plugin drops the action -->		
+	<form id="setupform" method="post" action=""><!-- nsur plugin drops the action to return to this form -->		
 		<input type="hidden" name="stage" value="gimmeanotherblog" />
 		<?php
 		/**
@@ -549,7 +549,7 @@ function signup_user( $user_name = '', $user_email = '', $errors = '' ) {
 		/* translators: %s: name of the network */
 		printf( __( 'Get your own %s account in seconds' ), get_site()->blogname ); //nsur changed
 	?></h2>
-	<form id="setupform" method="post" action="" novalidate="novalidate"><!-- nsur plugin drops the action -->	
+	<form id="setupform" method="post" action="" novalidate="novalidate"><!-- nsur plugin drops the action to return to this page -->	
 		<input type="hidden" name="stage" value="validate-user-signup" />
 		<?php
 		/** This action is documented in wp-signup.php */
