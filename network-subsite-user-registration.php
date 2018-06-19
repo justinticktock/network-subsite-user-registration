@@ -3,7 +3,7 @@
 Plugin Name: Network Subsite User Registration
 Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
 Description: Allows subsite user registration for a Network (multisite) installation
-Version: 2.0
+Version: 2.1
 Author: Justin Fletcher
 Author URI: http://justinandco.com
 Text Domain: network-subsite-user-registration
@@ -11,7 +11,7 @@ Domain Path: /languages/
 License: GPLv2 or later
 Network: true
 */
-    
+
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /**
@@ -36,7 +36,7 @@ class NSUR {
              */
             private function __construct() {            
 
-                    $this->plugin_full_path = __FILE__ ;
+					$this->plugin_full_path = __FILE__ ;
 
                     $this->plugin_file = trailingslashit( basename( dirname( __FILE__ ) )) . basename( __FILE__ ) ;
 
@@ -46,21 +46,22 @@ class NSUR {
                     // Set the constants needed by the plugin.
                     add_action( 'plugins_loaded', array( $this, 'constants' ), 1 );
 
-                    /* Load the functions files. */
+                    // Load the functions files.
+					// hook earlier (with 9) to make available for user access.					
                     add_action( 'admin_menu', array( $this, 'includes' ), 9 );
-
+					
                     // admin prompt and drop out with warning if not a Network
                     if ( ! is_multisite() ) {
                             add_action( 'admin_notices', array( $this, 'admin_not_a_network_notice' ));
                             return;
-                    }	
+                    }
 
                     // admin prompt and drop out with warning if not at the supported WordPress versions
                     // drop out with warning if the WP version is not supported (eg. we have no tested page template yet)
                     if ( version_compare( get_bloginfo( 'version' ), '4.7', '<') ) {
                             add_action( 'admin_notices', array( $this, 'admin_not_supported_wp_version' ));
                             return;
-                    }	
+                    }
 
                     // Load admin error message for Newtwork not allowing user registration
                     add_action( 'current_screen', array( $this, 'call_admin_user_registration_not_enabled' ) );
@@ -74,8 +75,8 @@ class NSUR {
                     // whitelist plugin query variable within WordPress
                     add_action( 'query_vars', array( $this, 'query_vars' ) );                    
 
-                    // redirect to the signup template file
-                    add_action( 'parse_request', array( $this, 'parse_request' ) );                   
+                    // redirect to the signup template file              
+					add_action( 'parse_request', array( $this, 'parse_request' ) );                 
                     
                     // remove the ability for users to register if not selected in this plugins settings.
                     //add_action( 'current_screen', array( $this, 'remove_users_can_register' ) );            
@@ -83,7 +84,7 @@ class NSUR {
 
                     // Load admin error messages
                     add_action( 'admin_notices', array( $this, 'action_admin_notices' ) );         
-
+	
                     // redirect to the sign-up page
                     add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ) );
 
@@ -95,8 +96,21 @@ class NSUR {
                     add_action( 'admin_page_access_denied', array( $this, 'nsur_add_subsite_to_logged_in_user' ), 98 );
 
                     // auto register during a login attempt to a different Network subsite when registration is enabled
-                    add_action( 'wp_login', array( $this, 'nsur_add_subsite_to_logged_in_user' ) );					
-            }
+                    add_action( 'wp_login', array( $this, 'nsur_add_subsite_to_logged_in_user' ) );
+
+					// This is an extra step to store the locale of the registering subsite into the User profile/preferences.
+					// First store the subsite locale to the new user account request
+					add_filter( 'signup_user_meta', array( $this, 'signup_user_meta_no_site_signup_active'), 10, 4 );
+					// Second collect the previoulsy stored locale and save to the activated uesr account
+					add_action( 'wpmu_activate_user', array( $this, 'override_mainsite_locale_during_registration'), 10, 3 );	
+					
+					
+					// Inject code into the activation template and force the locale to follow the subsite locale
+					add_action( 'activate_header', array( $this, 'switch_to_subsite_locale') );
+
+			}
+
+
 
             /**
              * Defines constants used by the plugin.
@@ -121,7 +135,6 @@ class NSUR {
                     $plugin_new_version =  $this->plugin_get_version();                                    
                     define( 'NSUR_PLUGIN_NEW_VERSION', $plugin_new_version);
 
-
             }
 
             /**
@@ -133,7 +146,7 @@ class NSUR {
 
                     // settings 
                     require_once( NSUR_MYPLUGINNAME_PATH . 'includes/settings.php' );  
-                    
+
             }
 
             /**
@@ -259,7 +272,7 @@ class NSUR {
             public function nsur_add_user_to_site( $user_id ) {
                     $user = get_user_by( 'id', $user_id );
                     $blog_id = get_current_blog_id();
-                    add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+                    add_user_to_blog( $blog_id, $user_id, get_blog_option( $blog_id, 'default_role', 'subscriber' ) );
         }
 
 
@@ -289,6 +302,103 @@ class NSUR {
             }
 
 
+            /**
+             * Before user activation add 'locale' to meta data ready for use during the activation.
+             *
+             * Set the user locale to the same as the locale of the site registered on.
+             * This is extra meta to the standard WP details so that we can use this during the
+             * user account activation and therefore get the "Account Activated" message in the same 
+             * locale as the subsite during the uesr frontend registration
+			 *
+             * @param array  $meta       Optional. Signup meta data. Default empty array.
+             * @param string $user       The user's requested login name.
+             * @param string $user_email The user's email address.
+             * @param string $key        The user's activation key.	
+             * @return meta
+             */			
+		 
+			public function signup_user_meta_no_site_signup_active(  $meta, $user, $user_email, $key ) {
+
+				$meta['locale'] = get_locale();
+				return $meta;
+				
+			}
+			
+			/**
+             * Collect the previously stored sub-site locale from the user meta
+             * This was previously stored using function override_mainsite_locale_during_registration()
+			 *
+			 * @param int   $user_id  User ID.
+			 * @param int   $password User password.
+			 * @param array $meta     Signup meta data.
+             * @return void
+             */			
+		 
+			public function override_mainsite_locale_during_registration( $user_id, $password, $meta ) {
+
+				$new_value = $meta['locale'] ; // this is the sub-site's locale 
+				// set the user locale to the same as the locale of the site registered on.
+				update_user_meta( $user_id, 'locale', $new_value );	
+			}
+								
+            /**
+             * Function to override the WP standard functionality and 
+			 * force the returned locale to come from the subsite local settings.
+			 *
+             * @return void
+             */			
+		 		 
+			public function locale( ) {
+			 
+				// WPLANG was defined in wp-config.
+				if ( defined( 'WPLANG' ) ) {
+					$locale = WPLANG;
+				}
+			 
+				$db_locale = get_option( 'WPLANG' );
+				if ( $db_locale !== false ) {
+					$locale = $db_locale;
+				}
+				
+				if ( empty( $locale ) ) {
+					$locale = 'en_US';
+				}
+				
+				return $locale;
+	
+			}
+			
+            /**
+             * Function to switch to the initiating subsite defined locale
+			 *
+             * @return void
+             */			
+		 		 
+			public function switch_to_subsite_locale(  ) {
+				
+				$key    = ! empty( $_GET['key'] ) ? $_GET['key'] : $_POST['key'];
+				$result = wpmu_activate_signup( $key );
+				
+				//Comment out previous method to force to user settings value for 'locale'
+				//we've chosen to always use the subsite defined locale.
+				//$user = get_userdata( $result['user_id'] );
+				//switch_to_locale( get_user_locale( $user ) );
+				
+				// switch to the locale of the initiating subsite
+				switch_to_blog( $result['blog_id'] );
+				//override the get_locale() functionality as we can't use this in its default form
+				//since subsite locale settings are not used if wp_installing() or if multisite.
+				add_filter( 'locale', array( $this, 'locale') );
+				$ms_locale = get_locale( );
+				remove_filter( 'locale', array( $this, 'locale') );
+				restore_current_blog();
+				
+				
+				switch_to_locale( $ms_locale );
+				
+			}	
+			
+				
             /**
              * Provides an upgrade path for older versions of the plugin
              *
@@ -333,7 +443,7 @@ class NSUR {
                             $current_uri = "{$parts['scheme']}://{$parts['host']}" . add_query_arg( NULL, NULL );        
                             wp_redirect( $current_uri );
                             exit();
-                    }                
+                    }
             }
 
 
@@ -386,7 +496,6 @@ class NSUR {
                     $query_vars[] = 'nsur_signup';
                     return $query_vars;
             }
-
             
             /**
              * Allow the WP parse request to dropout to the template file found.
@@ -398,11 +507,11 @@ class NSUR {
              * @return void
              */
             public function parse_request( &$wp ) {
-                    if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {    
-                        include( $this->get_signup_template() );
-                        exit();
-                    }
-            }
+						if ( array_key_exists( 'nsur_signup', $wp->query_vars ) ) {
+							include( $this->get_signup_template() );
+							exit();
+						}
+					}
 
             
             /**
@@ -627,7 +736,6 @@ class NSUR {
 
             }                
 
-
             /*
              * Get the ID of the main site in a multisite network
              *
@@ -710,7 +818,9 @@ class NSUR {
                     /* Otherwise the plugin template is provided for the sign-up page 
                      * and this is based on the version of WordPress so we can allow for variations.
                      */
-                    if ( version_compare( get_bloginfo( 'version' ), '4.9', '>=') ) {
+                    if ( version_compare( get_bloginfo( 'version' ), '4.9.6', '>=') ) {
+                                $custom_page_signup_template = 'page-signup-wp496.php' ;
+					} elseif ( version_compare( get_bloginfo( 'version' ), '4.9', '>=') ) {
                                 $custom_page_signup_template = 'page-signup-wp49.php' ;
 					} elseif ( version_compare( get_bloginfo( 'version' ), '4.7', '>=') ) {
                                 $custom_page_signup_template = 'page-signup-wp47.php' ;
@@ -733,7 +843,7 @@ class NSUR {
              * @return   False if not found otherwise the template file location given within the site
              */
             public function find_custom_template( $template_wanted = '' ) {
-     
+			
                     $plugin_template_file = false;                       
                     if ( locate_template( $template_wanted ) != '' ) {
 
@@ -762,6 +872,7 @@ class NSUR {
                     return $plugin_template_file;
             }
 
+
             /**
              * Creates or returns an instance of this class.
              *
@@ -777,9 +888,6 @@ class NSUR {
 
             }	
     }
-
-
-
 
 
 /**
@@ -810,14 +918,26 @@ register_deactivation_hook( __FILE__, 'nsur_flush_rewrites_deactivate' );
  */
 if ( is_multisite( ) ) {
     
-    $blogs = wp_list_pluck( get_sites(), 'blog_id' );
+    $blogs = wp_list_pluck( get_sites( ), 'blog_id' );
 
     if ( $blogs ) {
         
         // add user to the site
         function nsur_activate_user( $user_id, $password, $meta )  {
+			
                 global $blog_id;
-                add_user_to_blog( $blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+				$nsur_activate_user_default_role = get_blog_option( $blog_id, 'default_role', 'subscriber' );
+				
+				/**
+				 * Filters the default role asigned to a new user.
+				 *
+				 * @param int   $blog_id  Blog ID.
+				 * @param int   $user_id  User ID.
+				 * @param array $meta     Signup meta data.
+				 */
+				$nsur_activate_user_default_role = apply_filters( 'nsur_activate_user_default_role', $nsur_activate_user_default_role, $blog_id, $user_id, $meta );
+				
+                add_user_to_blog( $blog_id, $user_id, $nsur_activate_user_default_role );
         }
         
         // hook into the multisite user activation and add user if nsur settings are configured to allow this.

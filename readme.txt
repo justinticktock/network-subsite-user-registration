@@ -3,7 +3,6 @@ Contributors: justinticktock, keycapability
 Tags: signup, register, user, mu, multisite, network, multi-network, login, user registration
 Requires at least: 4.7
 Tested up to: 4.9
-Stable tag: 2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +30,7 @@ WordPress Network (Multisite) installations by default only allow user registrat
 
 1. Go to site dashboard ‘My Sites’ > ‘Network Admin’ > ‘Plugins’
 2. Click on the ‘Add New’ button
-3. search for ‘User upgrade capability’ and install
+3. search for ‘Network Subsite User Registration’ and install
 4. Network Activate the plugin
 
 To Manually install follow these steps..
@@ -68,6 +67,12 @@ This is since the plugin uses the email address as the uniqueness and proof that
 
 Note: If the username given for subsite2 registration is different from their subsite1 username then the username provided is ignored so that subsite1 and subsite2 have the same original username (which is associated with the email address already).  
 
+
+=  I just can't seem to find a way to get SMTP working with this plugin, what can I do? =
+
+This has been seen a few times in the forum, one proven solution is:
+* use  [plugin wp-mail-smtp](https://wordpress.org/plugins/wp-mail-smtp/)
+* Do NOT network activate SMTP and you don't need to add anything extra to the wp-config file
 
 
 == Screenshots ==
