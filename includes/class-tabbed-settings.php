@@ -51,12 +51,12 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 	class Tabbed_Settings extends Extendible_Tabbed_Settings {
 
 		// the following are configurable externally
-        public $menu_access_capability = '';
-        public $menu_parent = '';
-        public $menu = '';
-        public $menu_hook = '';
-        public $menu_title = '';
-        public $page_title = '';
+		public $menu_access_capability = '';
+		public $menu_parent = '';
+		public $menu = '';
+		public $menu_hook = '';
+		public $menu_title = '';
+		public $page_title = '';
 		public $default_tab_key = '';
 
 		/**
@@ -104,9 +104,9 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		}
 
 		/**
-         * perform an AND function on for the current user to have all capabilities listed within the Array
+     * perform an AND function on for the current user to have all capabilities listed within the Array
 		 *		 
-		 * @param array() of capabilities to perform an AND function on for the current user.
+		 * @param array of capabilities to perform an AND function on for the current user.
 		 * @return true is the current user can do all capabilities held within the array passed.
 		 */	 
 		public function current_user_can_do_all( $capabilities ) {
@@ -124,13 +124,12 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		}		
 		
 		
-        /**
-		 *		 
-         * Go through the tabbed_settings and limit based on current user capability.
-         *
-         * @param void
-         */
-        private function register_tabbed_settings( $settings ) {
+		/**		 
+		 * Go through the tabbed_settings and limit based on current user capability.
+		 *
+		 * @param void
+		 */
+		private function register_tabbed_settings( $settings ) {
 		
 			$this->settings = $settings;
 			
@@ -167,39 +166,39 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 					$this->default_tab_key = $first_key;
 				}
 			}
-        }
+    }
 
-        /**
-         * Amend default configuration.  This function strips out the config array elements and stores them 
-         * as a variable within the current Class object $this->"config-element" will be the means to return the 
-         * current configuration stored.
-         *
-         * @param array $config Array of config options to pass as class properties.
+		/**
+		 * Amend default configuration.  This function strips out the config array elements and stores them 
+		 * as a variable within the current Class object $this->"config-element" will be the means to return the 
+		 * current configuration stored.
+		 *
+		 * @param array $config Array of config options to pass as class properties.
 		 * @return - sets up the CLASS object values $this->config.
-         */
-        public function register_config( $config ) {
+     */
+    public function register_config( $config ) {
 
-            $keys = array( 
-						'default_tab_key',
-						'menu_parent',
-						'menu_access_capability',
-						'menu',
-						'menu_title',
-						'page_title',
-					);
+			$keys = array( 
+				'default_tab_key',
+				'menu_parent',
+				'menu_access_capability',
+				'menu',
+				'menu_title',
+				'page_title',
+			);
 
-            foreach ( $keys as $key ) {
-                if ( isset( $config[$key] ) ) {
-                    if ( is_array( $config[$key] ) ) {
-                        foreach ( $config[$key] as $subkey => $value ) {
-                           $this->{$key}[$subkey] = $value;
-                        }
-                    } else {
-                        $this->$key = $config[$key];
-                    }
-                }
-            }
-        }
+			foreach ( $keys as $key ) {
+				if ( isset( $config[$key] ) ) {
+					if ( is_array( $config[$key] ) ) {
+						foreach ( $config[$key] as $subkey => $value ) {
+							$this->{$key}[$subkey] = $value;
+						}
+					} else {
+						$this->$key = $config[$key];
+					}
+				}
+			}
+    }
 		
 		/**
 		 * render_setting_page function.
@@ -214,23 +213,23 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
                                         
 					foreach ( $section['settings'] as $option ) {
                                             
-                                            if ( isset( $option['name'] ) ) {
-                                                
-                                                $defaults = array(
-                                                                'std' => "",
-                                                                'sanitize_callback' => "",
-                                                                'title' => "",
-                                                                'type' => "field_default_option",
-                                                                'label' => "",
-                                                                );
-                                                
-                                                $option = wp_parse_args( $option, $defaults );
+						if ( isset( $option['name'] ) ) {
+								
+							$defaults = array(
+								'std' => "",
+								'sanitize_callback' => "",
+								'title' => "",
+								'type' => "field_default_option",
+								'label' => "",
+							);
+							
+							$option = wp_parse_args( $option, $defaults );
 
-						register_setting( $options_group, $option['name'], $option['sanitize_callback'] );
-						add_settings_section( $options_group, $section['title'], array( $this, 'hooks_section_callback' ), $options_group );
-						add_settings_field( $option['name'].'_setting-id', $option['label'], array( $this, $option['type'] ), $options_group, $options_group, array( 'option' => $option ) );	
+							register_setting( $options_group, $option['name'], $option['sanitize_callback'] );
+							add_settings_section( $options_group, $section['title'], array( $this, 'hooks_section_callback' ), $options_group );
+							add_settings_field( $option['name'].'_setting-id', $option['label'], array( $this, $option['type'] ), $options_group, $options_group, array( 'option' => $option ) );	
 
-                                            }              
+            }              
 					}
 				}
 			}
@@ -279,34 +278,34 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		 * field_checkbox_option 
 		 *
 		 * @param array of arguments to pass the option name to render the form field.
-                 *  'name'      =   option name
-                 *  'std'       =   default value to initialise the option to.                                                                           
-                 *  'value'     =   value to overwrite/force the setting to.
-                 *  'label'     =   left of the setting
-                 *  'desc'      =   for text under the setting.
-                 *  'type'      =   'field_checkbox_option'
-                 *  'cb_label'  =   right of the setting
-                 *  'disabled'  =   if true setting is disabled
-                 * 
+		 *  'name'      =   option name
+		 *  'std'       =   default value to initialise the option to.                                                                           
+		 *  'value'     =   value to overwrite/force the setting to.
+		 *  'label'     =   left of the setting
+		 *  'desc'      =   for text under the setting.
+		 *  'type'      =   'field_checkbox_option'
+		 *  'cb_label'  =   right of the setting
+		 *  'disabled'  =   if true setting is disabled
+		 * 
 		 * @return void
 		 */
 		public function field_checkbox_option( array $args  ) {
                     
-                        $defaults = array(
-                                        'value' => null,
-                                        'disabled' => false,
-                                      );
+			$defaults = array(
+				'value' => null,
+				'disabled' => false,
+			);
 
-                        $option = wp_parse_args( $args['option'], $defaults );
+			$option = wp_parse_args( $args['option'], $defaults );
 
-                        // Take value if not null
-                        if( is_null( $value = $option['value'] ) ) {
-                            $value = get_option( $option['name'] );
-                        }
-                        ?><label><input id="setting-<?php echo esc_html( $option['name'] ); ?>" name="<?php echo esc_html( $option['name'] ); ?>" type="checkbox" <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> value="1" <?php checked( '1', $value ); ?> /> <?php echo $option['cb_label']; ?></label><?php
+			// Take value if not null
+			if( is_null( $value = $option['value'] ) ) {
+				$value = get_option( $option['name'] );
+			}
+			?><label><input id="setting-<?php echo esc_html( $option['name'] ); ?>" name="<?php echo esc_html( $option['name'] ); ?>" type="checkbox" <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> value="1" <?php checked( '1', $value ); ?> /> <?php echo $option['cb_label']; ?></label><?php
 			if ( ! empty( $option['desc'] ) ) {
-                            echo ' <p class="description">' .  $option['desc'] . '</p>';
-                        }
+				echo ' <p class="description">' .  $option['desc'] . '</p>';
+			}
 		}
 
 		/**
@@ -319,33 +318,31 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		
 			$option	= $args['option'];
                         
-                        if ( array_key_exists( 'post_status', $option ) ) {
-                            $post_status = $option['post_status'];
-                        } else {
-                            $post_status = 'publish';
-                        }
+				if ( array_key_exists( 'post_status', $option ) ) {
+					$post_status = $option['post_status'];
+				} else {
+					$post_status = 'publish';
+				}
 			
 			?><label for="<?php echo $option['name']; ?>"><?php 
 			wp_dropdown_pages( array( 
-									'name' => $option['name'],
-									'id'         	=> 'setting-' . $option['name'],
-									'echo' => 1, 
-									'hierarchical'  => 0,
-									'sort_order'   	=> 'ASC',
-									'sort_column'  	=> 'post_title',
-									'show_option_none' => _x( "- None -", 'text for no page selected', 'network-subsite-user-registration' ), 
-									'option_none_value' => '0', 
-									'selected' => get_option( $option['name'] ),
-                                                                        'post_status'  => $post_status,
-									) 
-								); ?>
+				'name' 							=> $option['name'],
+				'id'         				=> 'setting-' . $option['name'],
+				'echo' 							=> 1, 
+				'hierarchical'  		=> 0,
+				'sort_order'   			=> 'ASC',
+				'sort_column'  			=> 'post_title',
+				'show_option_none' 	=> _x( "- None -", 'text for no page selected', 'network-subsite-user-registration' ), 
+				'option_none_value' => '0', 
+				'selected' 					=> get_option( $option['name'] ),
+				'post_status'  			=> $post_status,
+				) ); ?>
 			</label>
 
-			
 			<?php
 			if ( ! empty( $option['desc'] ) ) {
 				echo ' <p class="description">' . $option['desc'] . '</p>';
-                        }
+			}
 		}
 	
 		/**
@@ -355,7 +352,6 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		 * @return void
 		 */
 		public function field_plugin_checkbox_option( array $args  ) {
-		
 
 			$option   = $args['option'];
 			$filename = ( isset( $option['filename'] ) ? $option['filename'] : $option['slug'] );
@@ -372,14 +368,14 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			if ( ! file_exists( $plugin_main_file ) ) {
 				echo esc_html__( 'Enable to prompt installation and force active.', 'network-subsite-user-registration' ) . ' ( ';
 				if ( $value ) {
-                                    echo '  <a href="' . add_query_arg( 'page', TGM_Plugin_Activation::$instance->menu, admin_url( 'themes.php' ) ) . '">' .  _x( 'Install', 'Install the Plugin', 'network-subsite-user-registration' ) . " </a> | " ;
-                                }
+					echo '  <a href="' . add_query_arg( 'page', TGM_Plugin_Activation::$instance->menu, admin_url( 'themes.php' ) ) . '">' .  _x( 'Install', 'Install the Plugin', 'network-subsite-user-registration' ) . " </a> | ";
+				}
 				
 			} elseif ( is_plugin_active( $option['slug'] . '/' . $option['slug'] . '.php' ) &&  ! is_plugin_active_for_network( $option['slug'] . '/' . $option['slug'] . '.php' ) ) {
 				echo esc_html__( 'Force Active', 'network-subsite-user-registration' ) . ' ( ';
 				if ( ! $value ) { 
-                                    echo '<a href="plugins.php?s=' . esc_html( $option['label'] )	 . '">' .  _x( 'Deactivate', 'deactivate the plugin', 'network-subsite-user-registration' ) . "</a> | " ;	
-                                }
+					echo '<a href="plugins.php?s=' . esc_html( $option['label'] )	 . '">' .  _x( 'Deactivate', 'deactivate the plugin', 'network-subsite-user-registration' ) . "</a> | ";
+				}
 			} else {
 				echo esc_html__( 'Force Active', 'network-subsite-user-registration' ) . ' ( ';
 			}
@@ -387,7 +383,7 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			?></label><?php
 			if ( ! empty( $option['desc'] ) ) {
 				echo ' <p class="description">' .  $option['desc']  . '</p>';
-                        }
+			}
 		}	
 
 		/**
@@ -399,9 +395,9 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		public function field_textarea_option( array $args  ) {
 	
 			$defaults = array( 	
-						'columns' => "40",
-						'rows' => "3",
-						);
+				'columns' => "40",
+				'rows' => "3",
+			);
 				
 			$option = wp_parse_args( $args['option'], $defaults );
 			$value = get_option( $option['name'] );
@@ -409,7 +405,7 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 
 			if ( ! empty( $option['desc'] ) ) {
 				echo ' <p class="description">' . $option['desc'] . '</p>';
-                        }
+			}
 		}
 
 		/**
@@ -422,16 +418,16 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			$option   = $args['option'];
 			$value = get_option( $option['name'] );
 			?>
-                        <select id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" name="<?php echo esc_html( $option['name'] ); ?>"><?php
+			<select id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" name="<?php echo esc_html( $option['name'] ); ?>"><?php
 				foreach( $option['options'] as $key => $name ) {
 					echo '<option value="' . esc_attr( $key ) . '" ' . selected( $value, $key, false ) . '>' . esc_html( $name ) . '</option>';
-                                }
+				}
 			?>
-                        </select>
-                        <?php
+			</select>
+			<?php
 			if ( ! empty( $option['desc'] ) ) {
 				echo ' <p class="description">' . esc_html( $option['desc'] ) . '</p>';
-                        }
+			}
 		}
 		
 		/**
@@ -458,8 +454,8 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			asort( $roles );
 
 			
-			foreach( $roles as $role_key=>$role_name )
-			{
+			foreach( $roles as $role_key=>$role_name ) {
+
 				$id = sanitize_key( $role_key );
 				$value = ( array ) get_option( $option['name'] );
 
@@ -477,47 +473,41 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			}?></ul><?php 
 			if ( ! empty( $option['desc'] ) ) {
 				echo ' <p class="description">' . $option['desc'] . '</p>';
-                        }
+			}
 		}
 		
-
-                
-                
-                
-                        
-                
-                /**
+		/**
 		 * field_checkbox_option 
 		 *
 		 * @param array of arguments to pass the option name to render the form field.
-                 *  'name'      =   option name
-                 *  'std'       =   default value to initialise the option to.                                                                           
-                 *  'value'     =   value to overwrite/force the setting to.
-                 *  'label'     =   left of the setting
-                 *  'desc'      =   for text under the setting.
-                 *  'type'      =   'field_checkbox_option'
-                 *  'cb_label'  =   right of the setting
-                 *  'disabled'  =   if true setting is disabled
-                 * 
+		 *  'name'      =   option name
+		 *  'std'       =   default value to initialise the option to.                                                                           
+		 *  'value'     =   value to overwrite/force the setting to.
+		 *  'label'     =   left of the setting
+		 *  'desc'      =   for text under the setting.
+		 *  'type'      =   'field_checkbox_option'
+		 *  'cb_label'  =   right of the setting
+		 *  'disabled'  =   if true setting is disabled
+		 * 
 		 * @return void
 		 */
 		public function field_default_option( array $args  ) {
-                    $defaults = array(
-                                        'value' => null,
-                                        'disabled' => false,
-										'cb_label' => '',
-                    );
+			$defaults = array(
+				'value' => null,
+				'disabled' => false,
+				'cb_label' => '',
+			);
 
-                    $option = wp_parse_args( $args['option'], $defaults );					
-                    // Take value if not null
-                    if( is_null( $value = $option['value'] ) ) {
-                        $value = get_option( $option['name'] );
-                    }                    
-                    ?><input id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" type="text" name="<?php echo esc_html( $option['name'] ); ?>" value="<?php esc_attr_e( $value ); ?>"  <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> /> <?php echo $option['cb_label']; ?><?php
+			$option = wp_parse_args( $args['option'], $defaults );					
+			// Take value if not null
+			if( is_null( $value = $option['value'] ) ) {
+				$value = get_option( $option['name'] );
+			}                    
+			?><input id="setting-<?php echo esc_html( $option['name'] ); ?>" class="regular-text" type="text" name="<?php echo esc_html( $option['name'] ); ?>" value="<?php esc_attr_e( $value ); ?>"  <?php if( $option['disabled'] ) esc_html_e('disabled="disabled"' ); ?> /> <?php echo $option['cb_label']; ?><?php
 
-                    if ( ! empty( $option['desc'] ) ) {
-                            echo ' <p class="description">' . $option['desc'] . '</p>';
-                    }
+			if ( ! empty( $option['desc'] ) ) {
+				echo ' <p class="description">' . $option['desc'] . '</p>';
+			}
 		}
 		
 		/**
