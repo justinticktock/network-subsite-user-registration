@@ -9,11 +9,11 @@ Template Name: Signup Page
 
 
 /** Sets up the WordPress Environment. */
-require_once( ABSPATH . 'wp-load.php' );
+require_once( ABSPATH . 'wp-load.php' );		//nsur changed to use ABSPATH and require_once
 
 add_action( 'wp_head', 'wp_no_robots' );
 
-require_once( ABSPATH . 'wp-blog-header.php' );
+require_once( ABSPATH . 'wp-blog-header.php' );	//nsur changed to use ABSPATH and require_once
 
 if ( is_array( get_site_option( 'illegal_names' )) && isset( $_GET[ 'new' ] ) && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) ) {
 	wp_redirect( network_home_url() );
