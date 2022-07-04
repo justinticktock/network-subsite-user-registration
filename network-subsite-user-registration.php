@@ -1279,39 +1279,26 @@ function my_hook_to_new_user (  $user_id, $password, $meta ) {
  *  Code to run network side
  */
 if ( is_multisite( ) ) {
-    
-        $blogs = wp_list_pluck( get_sites( ), 'blog_id' );
-// add here a collapse of the $blogs array back down to only sites where 'nsur_join_site_enabled' = true.
+	if ( get_blog_option( $blog_id, 'nsur_join_site_enabled', false ) ) {
+		add_action( 'wpmu_activate_user', 'nsur_activate_user', 10, 3 );
+	} else {
+		remove_action( 'wpmu_activate_user', 'nsur_activate_user', 10 );
+	}
+	// add user to the site
+	function nsur_activate_user( $user_id, $password, $meta )  {
 
-        if ( $blogs ) {
+		global $blog_id;
+		$nsur_activate_user_default_role = get_blog_option( $blog_id, 'default_role', 'subscriber' );
 
-                // hook to add or remove a new action into the multisite user activation 
-                // this will add the new user if nsur settings are configured to allow this.
-                foreach( $blogs as $blog ) {	
-                        if ( get_blog_option( $blog, 'nsur_join_site_enabled', false ) ) {
-                                add_action( 'wpmu_activate_user', 'nsur_activate_user', 10, 3 );
-                        } else {
-                                remove_action( 'wpmu_activate_user', 'nsur_activate_user', 10 );
-                        }         
-                }
-                
-                // add user to the site
-                function nsur_activate_user( $user_id, $password, $meta )  {
-                                
-                        global $blog_id;
-                        $nsur_activate_user_default_role = get_blog_option( $blog_id, 'default_role', 'subscriber' );
-                        
-                        /**
-                         * Filters the default role asigned to a new user.
-                         *
-                         * @param int   $blog_id  Blog ID.
-                         * @param int   $user_id  User ID.
-                         * @param array $meta     Signup meta data.
-                         */
-                        $nsur_activate_user_default_role = apply_filters( 'nsur_activate_user_default_role', $nsur_activate_user_default_role, $blog_id, $user_id, $meta );
-                                        
-                        add_user_to_blog( $blog_id, $user_id, $nsur_activate_user_default_role );
-                }
+		/**
+		 * Filters the default role asigned to a new user.
+		 *
+		 * @param int   $blog_id  Blog ID.
+		 * @param int   $user_id  User ID.
+		 * @param array $meta     Signup meta data.
+		 */
+		$nsur_activate_user_default_role = apply_filters( 'nsur_activate_user_default_role', $nsur_activate_user_default_role, $blog_id, $user_id, $meta );
 
-        }
+		add_user_to_blog( $blog_id, $user_id, $nsur_activate_user_default_role );
+	}
 }
