@@ -106,7 +106,7 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 		/**
      * perform an AND function on for the current user to have all capabilities listed within the Array
 		 *		 
-		 * @param array of capabilities to perform an AND function on for the current user.
+		 * @param array() of capabilities to perform an AND function on for the current user.
 		 * @return true is the current user can do all capabilities held within the array passed.
 		 */	 
 		public function current_user_can_do_all( $capabilities ) {
@@ -294,6 +294,7 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			$defaults = array(
 				'value' => null,
 				'disabled' => false,
+				'cb_label' => '',
 			);
 
 			$option = wp_parse_args( $args['option'], $defaults );
@@ -336,7 +337,8 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 				'option_none_value' => '0', 
 				'selected' 					=> get_option( $option['name'] ),
 				'post_status'  			=> $post_status,
-				) ); ?>
+				) 
+			); ?>
 			</label>
 
 			<?php
@@ -454,8 +456,8 @@ if ( ! class_exists( 'Tabbed_Settings' ) ) {
 			asort( $roles );
 
 			
-			foreach( $roles as $role_key=>$role_name ) {
-
+			foreach( $roles as $role_key=>$role_name )
+			{
 				$id = sanitize_key( $role_key );
 				$value = ( array ) get_option( $option['name'] );
 
