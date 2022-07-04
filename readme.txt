@@ -81,7 +81,7 @@ This has been seen a few times in the forum, one proven solution is:
 == Screenshots ==
 
 1. The Settings Screen for user registration.
-2. An example of Network Settings allowing users to be registered
+2. An example of Network Settings allowing users to be registered.
 3. An example of Network Settings allowing both sites and users to be registered.
 
 == Changelog ==
