@@ -2,7 +2,7 @@
 Contributors: justinticktock, keycapability
 Tags: signup, register, user, mu, multisite, network, multi-network, login, user registration
 Requires at least: 4.7
-Tested up to: 6.0
+Tested up to: 6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,7 +11,6 @@ Allow the public to register user accounts on Subsites within a Network (MultiSi
 == Description ==
 
 The 'Network Subsite User Registration' (NSUR) plugin removes the WordPress Multisite restriction that registration is on the Network main site, subsite Administrators can now allow user registration for their site only.
-(Note: there is currently a limit of 100 subistes in the Network)
 
 WordPress Network (Multisite) installations by default only allow user registration for the whole Network, e.g. users can only register for the main site and not the other sites on the network.  The ‘Network Subsite User Registration’ plugin allows local admins of sub-sites within the Network/Multisite the ability to enable user registration themselves for their site.
 

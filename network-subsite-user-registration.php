@@ -3,7 +3,7 @@
  * Plugin Name: Network Subsite User Registration
  * Plugin URI: http://justinandco.com/plugins/network-subsite-user-registration/
  * Description: Allows subsite user registration for a Network (multisite) installation
- * Version: 3.9beta
+ * Version: Development
  * Author: Justin Fletcher
  * Author URI: http://justinandco.com
  * Text Domain: network-subsite-user-registration
@@ -86,7 +86,7 @@ class NSUR {
                 add_action( 'admin_notices', array( $this, 'nsur_admin_notices' ) );         
 
                 // redirect to the sign-up page
-				// earlier hook to win over other plugins pointing to the standard registration page at the default priority of 10
+		// earlier hook to win over other plugins pointing to the standard registration page at the default priority of 10
                 add_filter( 'wp_signup_location', array( $this, 'nsur_signup_page' ), 9 );
                                                                                 
                 // check and add users if already on the network 
@@ -793,9 +793,39 @@ class NSUR {
                 // Update the option again after upgrade() changes and set the current plugin revision	
                 update_option( 'nsur_plugin_version', NSUR_PLUGIN_NEW_VERSION ); 
                 }
+
+                // add hook into the new user activation to override the role given.
+                $network_user_registration_configured = $this->network_user_registration_enabled();
+                $local_join_site_enabled = get_option( 'nsur_join_site_enabled', false );
+
+                if ( $network_user_registration_configured     
+                        && $local_join_site_enabled
+                ) {
+                        add_action( 'wpmu_activate_user', array($this, 'nsur_activate_user'), 10, 3 );
+                } else {
+                        remove_action( 'wpmu_activate_user', array($this, 'nsur_activate_user'), 10 );
+                }                    
         }
 
-
+        /**
+         * This code will run on the network side during user activation to add new user to the sub-site.
+         */
+        public function nsur_activate_user( $user_id, $password, $meta )  {
+                        
+                global $blog_id;
+                $nsur_activate_user_default_role = get_blog_option( $blog_id, 'default_role', 'subscriber' );
+                
+                /**
+                 * Filters the default role asigned to a new user.
+                 *
+                 * @param int   $blog_id  Blog ID.
+                 * @param int   $user_id  User ID.
+                 * @param array $meta     Signup meta data.
+                 */
+                $nsur_activate_user_default_role = apply_filters( 'nsur_activate_user_default_role', $nsur_activate_user_default_role, $blog_id, $user_id, $meta );
+                                
+                add_user_to_blog( $blog_id, $user_id, $nsur_activate_user_default_role );
+        }
         
         /**
          * whitelist plugin defined query variable within WordPress
@@ -1250,68 +1280,31 @@ function nsur_flush_rewrites_deactivate( ) {
 }
 register_deactivation_hook( __FILE__, 'nsur_flush_rewrites_deactivate' );
 
-/**
- * Store originating blog_id to a cookie for the confirmation page (wp-activate.php) to follow correctly for the user.
- * it has been found necessary to break this code out of the NSUR class to fire in the right way.
- */
-add_action( 'wpmu_activate_user' , 'my_hook_to_new_user', 10, 3 );
-
-function my_hook_to_new_user (  $user_id, $password, $meta ) {
-
-	// storing originating locale to user meta for future use
-	$activation_subsite_locale = $meta['locale'] ; // this is the sub-site's locale 
-	// set the user locale to the same as the locale of the site registered on.
-	update_user_meta( $user_id, 'locale', $activation_subsite_locale );
-
-	// store originating blog_id to a cookie for the confirmation page (wp-activate.php) to follow correctly for the user.
-	// require( dirname(__FILE__) . '/wp-load.php' );				
-	list( $activate_path ) = explode( '?', wp_unslash( $_SERVER['REQUEST_URI'] ) );
-
-	$subsite_blog_id_cookie = 'wp-nsur-blog-id-' . COOKIEHASH;
-	$subsite_blog_id = get_current_blog_id();
-	setcookie( $subsite_blog_id_cookie, $subsite_blog_id, 0, $activate_path, COOKIE_DOMAIN, is_ssl(), true );
-
-}
 
 
-
-/*
- *  Code to run network side
- */
 if ( is_multisite( ) ) {
-    
-        $blogs = wp_list_pluck( get_sites( ), 'blog_id' );
-// add here a collapse of the $blogs array back down to only sites where 'nsur_join_site_enabled' = true.
+        
+        /**
+         * Store originating blog_id to a cookie for the confirmation page (wp-activate.php) to follow correctly for the user.
+         * it has been found necessary to break this code out of the NSUR class to fire in the right way.
+         */
+        add_action( 'wpmu_activate_user' , 'my_hook_to_new_user', 10, 3 );
 
-        if ( $blogs ) {
+        function my_hook_to_new_user (  $user_id, $password, $meta ) {
 
-                // hook to add or remove a new action into the multisite user activation 
-                // this will add the new user if nsur settings are configured to allow this.
-                foreach( $blogs as $blog ) {	
-                        if ( get_blog_option( $blog, 'nsur_join_site_enabled', false ) ) {
-                                add_action( 'wpmu_activate_user', 'nsur_activate_user', 10, 3 );
-                        } else {
-                                remove_action( 'wpmu_activate_user', 'nsur_activate_user', 10 );
-                        }         
-                }
-                
-                // add user to the site
-                function nsur_activate_user( $user_id, $password, $meta )  {
-                                
-                        global $blog_id;
-                        $nsur_activate_user_default_role = get_blog_option( $blog_id, 'default_role', 'subscriber' );
-                        
-                        /**
-                         * Filters the default role asigned to a new user.
-                         *
-                         * @param int   $blog_id  Blog ID.
-                         * @param int   $user_id  User ID.
-                         * @param array $meta     Signup meta data.
-                         */
-                        $nsur_activate_user_default_role = apply_filters( 'nsur_activate_user_default_role', $nsur_activate_user_default_role, $blog_id, $user_id, $meta );
-                                        
-                        add_user_to_blog( $blog_id, $user_id, $nsur_activate_user_default_role );
-                }
+                // storing originating locale to user meta for future use
+                $activation_subsite_locale = $meta['locale'] ; // this is the sub-site's locale 
+                // set the user locale to the same as the locale of the site registered on.
+                update_user_meta( $user_id, 'locale', $activation_subsite_locale );
+
+                // store originating blog_id to a cookie for the confirmation page (wp-activate.php) to follow correctly for the user.
+                // require( dirname(__FILE__) . '/wp-load.php' );				
+                list( $activate_path ) = explode( '?', wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
+                $subsite_blog_id_cookie = 'wp-nsur-blog-id-' . COOKIEHASH;
+                $subsite_blog_id = get_current_blog_id();
+                setcookie( $subsite_blog_id_cookie, $subsite_blog_id, 0, $activate_path, COOKIE_DOMAIN, is_ssl(), true );
 
         }
+
 }
