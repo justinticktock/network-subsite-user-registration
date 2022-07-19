@@ -2,7 +2,7 @@
 Contributors: justinticktock, keycapability
 Tags: signup, register, user, mu, multisite, network, multi-network, login, user registration
 Requires at least: 4.7
-Tested up to: 6.1
+Tested up to: 6.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
